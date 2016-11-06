@@ -14,14 +14,13 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
-#include <QMessageBox>
-
 
 QT_BEGIN_NAMESPACE
 
@@ -30,6 +29,7 @@ class Ui_ImageProcessClass
 public:
     QAction *actionOpen;
     QWidget *centralWidget;
+    QLabel *imageLabel;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QToolBar *mainToolBar;
@@ -44,6 +44,9 @@ public:
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
+        imageLabel = new QLabel(centralWidget);
+        imageLabel->setObjectName(QStringLiteral("imageLabel"));
+        imageLabel->setGeometry(QRect(5, 5, 121, 111));
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -58,11 +61,9 @@ public:
         statusBar->setObjectName(QStringLiteral("statusBar"));
         ImageProcessClass->setStatusBar(statusBar);
 
-		ImageProcessClass->connect(actionOpen, SIGNAL(triggered()), ImageProcessClass, SLOT(fileOpenSlot()));
-
         menuBar->addAction(menuFile->menuAction());
         menuFile->addAction(actionOpen);
-		
+
         retranslateUi(ImageProcessClass);
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
@@ -72,6 +73,7 @@ public:
     {
         ImageProcessClass->setWindowTitle(QApplication::translate("ImageProcessClass", "ImageProcess", 0));
         actionOpen->setText(QApplication::translate("ImageProcessClass", "open", 0));
+        imageLabel->setText(QApplication::translate("ImageProcessClass", "TextLabel", 0));
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "file", 0));
     } // retranslateUi
 
