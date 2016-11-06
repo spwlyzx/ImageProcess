@@ -10,3 +10,9 @@ ImageProcess::~ImageProcess()
 {
 
 }
+
+void ImageProcess::fileOpenSlot(){
+	QMessageBox msgBox;
+	msgBox.setText("The document has been modified.");
+	msgBox.exec();
+}

@@ -12,6 +12,9 @@ public:
 	ImageProcess(QWidget *parent = 0);
 	~ImageProcess();
 
+public slots:
+void fileOpenSlot();
+
 private:
 	Ui::ImageProcessClass ui;
 };

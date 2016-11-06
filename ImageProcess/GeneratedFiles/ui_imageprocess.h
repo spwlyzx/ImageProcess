@@ -15,19 +15,24 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
+#include <QMessageBox>
+
 
 QT_BEGIN_NAMESPACE
 
 class Ui_ImageProcessClass
 {
 public:
-    QMenuBar *menuBar;
-    QToolBar *mainToolBar;
+    QAction *actionOpen;
     QWidget *centralWidget;
+    QMenuBar *menuBar;
+    QMenu *menuFile;
+    QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ImageProcessClass)
@@ -35,19 +40,29 @@ public:
         if (ImageProcessClass->objectName().isEmpty())
             ImageProcessClass->setObjectName(QStringLiteral("ImageProcessClass"));
         ImageProcessClass->resize(600, 400);
-        menuBar = new QMenuBar(ImageProcessClass);
-        menuBar->setObjectName(QStringLiteral("menuBar"));
-        ImageProcessClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(ImageProcessClass);
-        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-        ImageProcessClass->addToolBar(mainToolBar);
+        actionOpen = new QAction(ImageProcessClass);
+        actionOpen->setObjectName(QStringLiteral("actionOpen"));
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         ImageProcessClass->setCentralWidget(centralWidget);
+        menuBar = new QMenuBar(ImageProcessClass);
+        menuBar->setObjectName(QStringLiteral("menuBar"));
+        menuBar->setGeometry(QRect(0, 0, 600, 23));
+        menuFile = new QMenu(menuBar);
+        menuFile->setObjectName(QStringLiteral("menuFile"));
+        ImageProcessClass->setMenuBar(menuBar);
+        mainToolBar = new QToolBar(ImageProcessClass);
+        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
+        ImageProcessClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(ImageProcessClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         ImageProcessClass->setStatusBar(statusBar);
 
+		ImageProcessClass->connect(actionOpen, SIGNAL(triggered()), ImageProcessClass, SLOT(fileOpenSlot()));
+
+        menuBar->addAction(menuFile->menuAction());
+        menuFile->addAction(actionOpen);
+		
         retranslateUi(ImageProcessClass);
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
@@ -56,6 +71,8 @@ public:
     void retranslateUi(QMainWindow *ImageProcessClass)
     {
         ImageProcessClass->setWindowTitle(QApplication::translate("ImageProcessClass", "ImageProcess", 0));
+        actionOpen->setText(QApplication::translate("ImageProcessClass", "open", 0));
+        menuFile->setTitle(QApplication::translate("ImageProcessClass", "file", 0));
     } // retranslateUi
 
 };
