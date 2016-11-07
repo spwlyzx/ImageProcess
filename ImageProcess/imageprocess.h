@@ -12,20 +12,23 @@
 class ImageProcess : public QMainWindow
 {
 	Q_OBJECT
+
+private:
+	Ui::ImageProcessClass ui;
 	cv::Mat image;
+	QString filename;
 
 public:
 	ImageProcess(QWidget *parent = 0);
 	~ImageProcess();
 
 public slots:
-void fileOpenSlot();
+	void fileOpenSlot();
+	void fileSaveSlot();
+	void fileSaveAsSlot();
 
 private:
 	void displayMat(cv::Mat img);
-
-private:
-	Ui::ImageProcessClass ui;
 };
 
 #endif // IMAGEPROCESS_H

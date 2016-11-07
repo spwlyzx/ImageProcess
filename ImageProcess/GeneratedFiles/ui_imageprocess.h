@@ -28,6 +28,9 @@ class Ui_ImageProcessClass
 {
 public:
     QAction *actionOpen;
+    QAction *actionSave;
+    QAction *actionExit;
+    QAction *actionSave_as;
     QWidget *centralWidget;
     QLabel *imageLabel;
     QMenuBar *menuBar;
@@ -42,11 +45,17 @@ public:
         ImageProcessClass->resize(600, 400);
         actionOpen = new QAction(ImageProcessClass);
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
+        actionSave = new QAction(ImageProcessClass);
+        actionSave->setObjectName(QStringLiteral("actionSave"));
+        actionExit = new QAction(ImageProcessClass);
+        actionExit->setObjectName(QStringLiteral("actionExit"));
+        actionSave_as = new QAction(ImageProcessClass);
+        actionSave_as->setObjectName(QStringLiteral("actionSave_as"));
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         imageLabel = new QLabel(centralWidget);
         imageLabel->setObjectName(QStringLiteral("imageLabel"));
-        imageLabel->setGeometry(QRect(5, 5, 121, 111));
+        imageLabel->setGeometry(QRect(0, 0, 121, 111));
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -63,8 +72,12 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuFile->addAction(actionOpen);
+        menuFile->addAction(actionSave);
+        menuFile->addAction(actionSave_as);
+        menuFile->addAction(actionExit);
 
         retranslateUi(ImageProcessClass);
+        QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
     } // setupUi
@@ -72,9 +85,12 @@ public:
     void retranslateUi(QMainWindow *ImageProcessClass)
     {
         ImageProcessClass->setWindowTitle(QApplication::translate("ImageProcessClass", "ImageProcess", 0));
-        actionOpen->setText(QApplication::translate("ImageProcessClass", "open", 0));
-        imageLabel->setText(QApplication::translate("ImageProcessClass", "TextLabel", 0));
-        menuFile->setTitle(QApplication::translate("ImageProcessClass", "file", 0));
+        actionOpen->setText(QApplication::translate("ImageProcessClass", "Open", 0));
+        actionSave->setText(QApplication::translate("ImageProcessClass", "Save", 0));
+        actionExit->setText(QApplication::translate("ImageProcessClass", "Exit", 0));
+        actionSave_as->setText(QApplication::translate("ImageProcessClass", "Save as..", 0));
+        imageLabel->setText(QString());
+        menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
     } // retranslateUi
 
 };
