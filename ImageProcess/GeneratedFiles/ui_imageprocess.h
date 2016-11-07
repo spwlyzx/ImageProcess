@@ -31,10 +31,14 @@ public:
     QAction *actionSave;
     QAction *actionExit;
     QAction *actionSave_as;
+    QAction *actionReverse;
+    QAction *actionRotate_CW;
+    QAction *actionRotate_CCW;
     QWidget *centralWidget;
     QLabel *imageLabel;
     QMenuBar *menuBar;
     QMenu *menuFile;
+    QMenu *menuEdit;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -51,6 +55,12 @@ public:
         actionExit->setObjectName(QStringLiteral("actionExit"));
         actionSave_as = new QAction(ImageProcessClass);
         actionSave_as->setObjectName(QStringLiteral("actionSave_as"));
+        actionReverse = new QAction(ImageProcessClass);
+        actionReverse->setObjectName(QStringLiteral("actionReverse"));
+        actionRotate_CW = new QAction(ImageProcessClass);
+        actionRotate_CW->setObjectName(QStringLiteral("actionRotate_CW"));
+        actionRotate_CCW = new QAction(ImageProcessClass);
+        actionRotate_CCW->setObjectName(QStringLiteral("actionRotate_CCW"));
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         imageLabel = new QLabel(centralWidget);
@@ -62,6 +72,8 @@ public:
         menuBar->setGeometry(QRect(0, 0, 600, 23));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
+        menuEdit = new QMenu(menuBar);
+        menuEdit->setObjectName(QStringLiteral("menuEdit"));
         ImageProcessClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(ImageProcessClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -71,10 +83,14 @@ public:
         ImageProcessClass->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuEdit->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionSave);
         menuFile->addAction(actionSave_as);
         menuFile->addAction(actionExit);
+        menuEdit->addAction(actionReverse);
+        menuEdit->addAction(actionRotate_CW);
+        menuEdit->addAction(actionRotate_CCW);
 
         retranslateUi(ImageProcessClass);
         QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
@@ -86,11 +102,36 @@ public:
     {
         ImageProcessClass->setWindowTitle(QApplication::translate("ImageProcessClass", "ImageProcess", 0));
         actionOpen->setText(QApplication::translate("ImageProcessClass", "Open", 0));
+#ifndef QT_NO_TOOLTIP
+        actionOpen->setToolTip(QApplication::translate("ImageProcessClass", "Open exist file", 0));
+#endif // QT_NO_TOOLTIP
         actionSave->setText(QApplication::translate("ImageProcessClass", "Save", 0));
+#ifndef QT_NO_TOOLTIP
+        actionSave->setToolTip(QApplication::translate("ImageProcessClass", "Save the file", 0));
+#endif // QT_NO_TOOLTIP
         actionExit->setText(QApplication::translate("ImageProcessClass", "Exit", 0));
+#ifndef QT_NO_TOOLTIP
+        actionExit->setToolTip(QApplication::translate("ImageProcessClass", "Exit the program", 0));
+#endif // QT_NO_TOOLTIP
         actionSave_as->setText(QApplication::translate("ImageProcessClass", "Save as..", 0));
+#ifndef QT_NO_TOOLTIP
+        actionSave_as->setToolTip(QApplication::translate("ImageProcessClass", "Save the file as...", 0));
+#endif // QT_NO_TOOLTIP
+        actionReverse->setText(QApplication::translate("ImageProcessClass", "Reverse", 0));
+#ifndef QT_NO_TOOLTIP
+        actionReverse->setToolTip(QApplication::translate("ImageProcessClass", "Reverse the image", 0));
+#endif // QT_NO_TOOLTIP
+        actionRotate_CW->setText(QApplication::translate("ImageProcessClass", "Rotate CW", 0));
+#ifndef QT_NO_TOOLTIP
+        actionRotate_CW->setToolTip(QApplication::translate("ImageProcessClass", "Rotate 90 degree clockwise", 0));
+#endif // QT_NO_TOOLTIP
+        actionRotate_CCW->setText(QApplication::translate("ImageProcessClass", "Rotate CCW", 0));
+#ifndef QT_NO_TOOLTIP
+        actionRotate_CCW->setToolTip(QApplication::translate("ImageProcessClass", "Rotate 90 degree counter clockwise", 0));
+#endif // QT_NO_TOOLTIP
         imageLabel->setText(QString());
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
+        menuEdit->setTitle(QApplication::translate("ImageProcessClass", "Edit", 0));
     } // retranslateUi
 
 };

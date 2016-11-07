@@ -26,6 +26,9 @@ public slots:
 	void fileOpenSlot();
 	void fileSaveSlot();
 	void fileSaveAsSlot();
+	void editReverseSlot();
+	void editRotateCWSlot();
+	void editRotateCCWSlot();
 
 private:
 	void displayMat(cv::Mat img);
