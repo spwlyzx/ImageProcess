@@ -330,6 +330,262 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="Linear">
+     <attribute name="title">
+      <string>GreyScale_Linear</string>
+     </attribute>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>51</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Point x:</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Linear_x">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>8</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <double>255.000000000000000</double>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>122</x>
+        <y>10</y>
+        <width>21</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>y:</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Linear_y">
+      <property name="geometry">
+       <rect>
+        <x>136</x>
+        <y>8</y>
+        <width>51</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <double>255.000000000000000</double>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="Linear_add">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>8</y>
+        <width>51</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Add</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="Linear_points">
+      <property name="geometry">
+       <rect>
+        <x>360</x>
+        <y>9</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="Linear_apply">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>8</y>
+        <width>66</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>315</x>
+        <y>10</y>
+        <width>54</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Points:</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="GreyOther">
+     <attribute name="title">
+      <string>GreyScale_Other</string>
+     </attribute>
+     <widget class="QComboBox" name="GreyMethods">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>8</y>
+        <width>131</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="currentText">
+       <string>Log-transformation</string>
+      </property>
+      <property name="maxCount">
+       <number>2147483646</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>Log-transformation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Exp-transformation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Gamma Correction</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>155</x>
+        <y>11</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>a</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>12</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>b</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>11</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>c</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Grey_a">
+      <property name="geometry">
+       <rect>
+        <x>168</x>
+        <y>9</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Grey_b">
+      <property name="geometry">
+       <rect>
+        <x>231</x>
+        <y>9</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Grey_c">
+      <property name="geometry">
+       <rect>
+        <x>292</x>
+        <y>9</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>5</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_13">
+      <property name="geometry">
+       <rect>
+        <x>343</x>
+        <y>12</y>
+        <width>41</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Gamma</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="Grey_gamma">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>9</y>
+        <width>62</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="Grey_apply">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>10</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -357,6 +613,16 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <widget class="QMenu" name="menuHistogram_Specification">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>Histogram Specification</string>
+     </property>
+     <addaction name="actionChoose_a_image_SML"/>
+     <addaction name="actionChoose_a_image_GML"/>
+    </widget>
     <addaction name="actionReverse"/>
     <addaction name="separator"/>
     <addaction name="actionRotate_CW"/>
@@ -365,6 +631,9 @@
     <addaction name="actionChoose_Clip_Area"/>
     <addaction name="actionExit_Choose"/>
     <addaction name="actionClip"/>
+    <addaction name="separator"/>
+    <addaction name="actionHistogram_Equalization"/>
+    <addaction name="menuHistogram_Specification"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -472,6 +741,38 @@
    </property>
    <property name="toolTip">
     <string>Exit choosing clip area mode</string>
+   </property>
+  </action>
+  <action name="actionHistogram_Equalization">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Histogram Equalization</string>
+   </property>
+  </action>
+  <action name="actionChoose_a_image_SML">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Choose a image SML</string>
+   </property>
+  </action>
+  <action name="actionNormal_Distribution_SML">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Normal Distribution SML</string>
+   </property>
+  </action>
+  <action name="actionChoose_a_image_GML">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Choose a image GML</string>
    </property>
   </action>
  </widget>

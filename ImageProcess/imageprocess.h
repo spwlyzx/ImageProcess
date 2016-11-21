@@ -8,8 +8,14 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <QtWidgets/QFileDialog>
-#include <QtGui/QMouseEvent> 
-#include <QtWidgets/QRubberBand> 
+#include <QtGui/QMouseEvent>
+#include <math.h>
+#include <iostream>
+
+struct Control_Point{
+	unsigned x;
+	unsigned y;
+};
 
 class ImageProcess : public QMainWindow
 {
@@ -30,6 +36,7 @@ private:
 	QSize imageSize;
 	bool isClipping = false;
 	bool isProcessing = false;
+	std::vector<Control_Point> linear_points;
 
 public:
 	ImageProcess(QWidget *parent = 0);
@@ -51,6 +58,12 @@ private slots:
 	void changeSaturationButtonSlot();
 	void changeHueSlot(int change);
 	void changeHueButtonSlot();
+	void addLinearPointSlot();
+	void applyLinearSlot();
+	void applyGreyOtherSlot();
+	void histogramEqualizationSlot();
+	void histogramSpecification_Image_Slot_SML();
+	void histogramSpecification_Image_Slot_GML();
 
 private:
 	void displayMat(cv::Mat img);
@@ -64,7 +77,16 @@ private:
 	int min(int a, int b, int c);
 	void HsvToRgb(unsigned char &r, unsigned char &g, unsigned char &b, unsigned char h, unsigned char s, unsigned char v);
 	void RgbToHsv(unsigned char r, unsigned char g, unsigned char b, unsigned char &h, unsigned char &s, unsigned char &v);
-
+	unsigned char getGreyValue(unsigned char r, unsigned char g, unsigned char b);
+	unsigned char getNewGreyLinear(unsigned char r, unsigned char g, unsigned char b, Control_Point m, Control_Point n);
+	void getRGBbyNewGrey(unsigned char &r, unsigned char &g, unsigned char &b, unsigned newGrey);
+	void changeGreyByLog();
+	unsigned char getNewGreyLog(unsigned char R, unsigned char G, unsigned char B, double a, double b, double c);
+	void changeGreyByExp();
+	unsigned char getNewGreyExp(unsigned char R, unsigned char G, unsigned char B, double a, double b, double c);
+	void changeGreyByGamma();
+	unsigned char getNewGreyGamma(unsigned char R, unsigned char G, unsigned char B, double c, double gamma);
+	void getHistogram(double temp[], cv::Mat &im);
 };
 
 #endif // IMAGEPROCESS_H

@@ -35,6 +35,15 @@ ImageProcess::ImageProcess(QWidget *parent)
 	connect(ui.hueSlider, SIGNAL(valueChanged(int)), this, SLOT(changeHueSlot(int)));
 	connect(ui.hueButton, SIGNAL(clicked()), this, SLOT(changeHueButtonSlot()));
 
+	connect(ui.Linear_add, SIGNAL(clicked()), this, SLOT(addLinearPointSlot()));
+	connect(ui.Linear_apply, SIGNAL(clicked()), this, SLOT(applyLinearSlot()));
+
+	connect(ui.Grey_apply, SIGNAL(clicked()), this, SLOT(applyGreyOtherSlot()));
+
+	connect(ui.actionHistogram_Equalization, SIGNAL(triggered()), this, SLOT(histogramEqualizationSlot()));
+	connect(ui.actionChoose_a_image_SML, SIGNAL(triggered()), this, SLOT(histogramSpecification_Image_Slot_SML()));
+	connect(ui.actionChoose_a_image_GML, SIGNAL(triggered()), this, SLOT(histogramSpecification_Image_Slot_GML()));
+
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, ui.imageLabel);
 }
 
@@ -67,8 +76,18 @@ void ImageProcess::fileOpenSlot()
 		ui.actionSave->setEnabled(true);
 		ui.actionSave_as->setEnabled(true);
 		ui.actionChoose_Clip_Area->setEnabled(true);
+		ui.actionHistogram_Equalization->setEnabled(true);
+		ui.actionChoose_a_image_SML->setEnabled(true);
+		ui.actionChoose_a_image_GML->setEnabled(true);
 		ui.tabWidget->setEnabled(true);
-	}	
+		Control_Point temp1, temp2;
+		temp1.x = 0;
+		temp1.y = 0;
+		temp2.x = 255;
+		temp2.y = 255;
+		linear_points.push_back(temp1);
+		linear_points.push_back(temp2);
+	}
 }
 
 void ImageProcess::fileSaveSlot()
@@ -400,6 +419,274 @@ void ImageProcess::changeHueButtonSlot()
 	ui.hueSlider->setValue(ui.hueInput->value());
 }
 
+void ImageProcess::addLinearPointSlot()
+{
+	Control_Point cp;
+	cp.x = (int)ui.Linear_x->value();
+	cp.y = (int)ui.Linear_y->value();
+	for (int i = 0; i < linear_points.size(); i++){
+		if (linear_points[i].x == cp.x && linear_points[i].y == cp.y){
+			QMessageBox msgBox;
+			msgBox.setText("无法插入重复点。");
+			msgBox.exec();
+		}
+		if (linear_points[i].x > cp.x && linear_points[i].y < cp.y || linear_points[i].x < cp.x && linear_points[i].y > cp.y){
+			QMessageBox msgBox;
+			msgBox.setText("插入点后的分段函数必须是递增函数。");
+			msgBox.exec();
+		}
+	}
+	linear_points.push_back(cp);
+	QString temp = ui.Linear_points->toPlainText();
+	if (temp.length() > 1){
+		temp = temp + "\r\n";
+	}
+	char temp2[10];
+	itoa(linear_points.size()-2,temp2,10);
+	temp = temp + "Point " + temp2;
+	itoa((int)cp.x, temp2, 10);
+	temp = temp + ":(" + temp2;
+	itoa((int)cp.y, temp2, 10);
+	temp = temp + "," + temp2 + ")";
+	ui.Linear_points->setPlainText(temp);
+}
+
+void ImageProcess::applyLinearSlot()
+{
+	for (int i = 0; i < linear_points.size(); i++){
+		for (int j = i + 1; j < linear_points.size(); j++)
+		{
+			if (linear_points[i].x > linear_points[j].x){
+				Control_Point temp = linear_points[i];
+				linear_points[i] = linear_points[j];
+				linear_points[j] = temp;
+			}
+		}
+	}
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char b = inData[i + 0];
+			unsigned char g = inData[i + 1];
+			unsigned char r = inData[i + 2];
+			unsigned char grey = getGreyValue(r, g, b);
+			int j = 0;
+			for (; j < linear_points.size(); j++){
+				if (linear_points[j].x>grey){
+					break;
+				}
+			}
+			unsigned char newGrey = getNewGreyLinear(r,g,b,linear_points[j-1],linear_points[j]);
+			getRGBbyNewGrey(r,g,b,newGrey);
+			outData[i + 0] = b;
+			outData[i + 1] = g;
+			outData[i + 2] = r;
+		}
+	}
+	temp.copyTo(image);
+	temp.copyTo(originImage);
+	displayMat(image);
+}
+
+void ImageProcess::applyGreyOtherSlot()
+{
+	int method = ui.GreyMethods->currentIndex();
+	switch (method){
+		case 0: changeGreyByLog(); break;
+		case 1: changeGreyByExp(); break;
+		case 2: changeGreyByGamma(); break;
+		default: break;
+	}
+}
+
+void ImageProcess::histogramEqualizationSlot()
+{
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	double p[256] = { 0 };
+	getHistogram(p, originImage);
+	
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+			unsigned char grey = getGreyValue(R, G, B);
+			unsigned char newGrey = p[grey] * 255;
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp.copyTo(image);
+	temp.copyTo(originImage);
+	displayMat(image);
+}
+
+void ImageProcess::histogramSpecification_Image_Slot_SML()
+{
+	filename = QFileDialog::getOpenFileName(this, tr("Choose Image"),
+		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+	cv::Mat temp = cv::imread(filename.toStdString());
+
+	if (!image.data)
+	{
+		QMessageBox msgBox;
+		msgBox.setText("读取图片失败，请注意路径中不能含有中文字符.");
+		msgBox.exec();
+		return;
+	}
+
+	double p[256] = { 0 };
+	double q[256] = { 0 };
+	double srcMin[256][256] = { 0 };
+	int Mapping[256] = { 0 };
+
+	getHistogram(p, originImage);
+	getHistogram(q, temp);
+
+	double scrMin[256][256];
+	for (int y = 0; y < 256; y++){
+		for (int x = 0; x < 256; x++){
+			srcMin[x][y] = fabs(p[y] - q[x]);
+		}
+	}
+	for (int y = 0; y < 256; y++){
+		int minX = 0;
+		double minValue = srcMin[0][y];
+		for (int x = 1; x < 256; x++){
+			if (minValue > srcMin[x][y]){
+				minValue = srcMin[x][y];
+				minX = x;
+			}
+		}
+		Mapping[y] = minX;
+	}
+
+	cv::Mat temp2;
+	temp2.create(originImage.size(), originImage.type());
+
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp2.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+			unsigned char grey = getGreyValue(R, G, B);
+			unsigned char newGrey = q[Mapping[grey]]*255;
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp2.copyTo(image);
+	temp2.copyTo(originImage);
+	displayMat(image);
+}
+
+void ImageProcess::histogramSpecification_Image_Slot_GML()
+{
+	filename = QFileDialog::getOpenFileName(this, tr("Choose Image"),
+		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+	cv::Mat temp = cv::imread(filename.toStdString());
+
+	if (!image.data)
+	{
+		QMessageBox msgBox;
+		msgBox.setText("读取图片失败，请注意路径中不能含有中文字符.");
+		msgBox.exec();
+		return;
+	}
+
+	double p[256] = { 0 };
+	double q[256] = { 0 };
+	double srcMin[256][256] = { 0 };
+	int Mapping[256] = { 0 };
+
+	getHistogram(p, originImage);
+	getHistogram(q, temp);
+
+	double scrMin[256][256];
+	for (int y = 0; y < 256; y++){
+		for (int x = 0; x < 256; x++){
+			srcMin[x][y] = fabs(p[y] - q[x]);
+		}
+	}
+
+	int lastStartY = 0, lastEndY = 0, startY = 0, endY = 0;
+	for (int x = 0; x < 256; x++){
+		double minValue = srcMin[x][0];
+		for (int y = 0; y < 256; y++){
+			if (minValue > srcMin[x][y]){
+				endY = y;
+				minValue = srcMin[x][y];
+			}
+		}
+		if (startY != lastStartY || endY != lastEndY){
+			for (int i = startY; i <= endY; i++){
+				Mapping[i] = x;
+			}
+			lastStartY = startY;
+			lastEndY = endY;
+			startY = lastEndY + 1;
+		}
+	}
+
+	cv::Mat temp2;
+	temp2.create(originImage.size(), originImage.type());
+
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp2.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+			unsigned char grey = getGreyValue(R, G, B);
+			unsigned char newGrey = q[Mapping[grey]] * 255;
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp2.copyTo(image);
+	temp2.copyTo(originImage);
+	displayMat(image);
+}
+
+
 void ImageProcess::mousePressEvent(QMouseEvent *event)
 {
 	if (isClipping)
@@ -699,4 +986,179 @@ void ImageProcess::RgbToHsv(unsigned char r, unsigned char g, unsigned char b, u
 		h = 85 + 43 * (b - r) / (rgbMax - rgbMin);
 	else
 		h = 171 + 43 * (r - g) / (rgbMax - rgbMin);
+}
+
+unsigned char ImageProcess::getGreyValue(unsigned char r, unsigned char g, unsigned char b)
+{
+	double tr = 0.11 * r;
+	double tg = 0.59 * g;
+	double tb = 0.3 * b;
+	return tr + tg + tb;
+}
+
+unsigned char ImageProcess::getNewGreyLinear(unsigned char r, unsigned char g, unsigned char b, Control_Point m, Control_Point n)
+{
+	double newGrey = 0;
+	if (m.y == n.y)
+	{
+		newGrey = m.y;
+	}
+	else
+	{
+		unsigned char grey = getGreyValue(r, g, b);
+		double lean = (n.y - m.y) / (double)(n.x - m.x);
+		newGrey = lean * (grey - m.x) + m.y;
+	}
+	return newGrey;
+}
+
+void ImageProcess::getRGBbyNewGrey(unsigned char &r, unsigned char &g, unsigned char &b, unsigned newGrey)
+{
+	double ratio = newGrey / (double) getGreyValue(r,g,b);
+	r = ratio *r > 255 ? 255 : ratio*r;
+	g = ratio *g > 255 ? 255 : ratio*g;
+	b = ratio *b > 255 ? 255 : ratio*b;
+}
+
+void ImageProcess::changeGreyByLog()
+{
+	double a = ui.Grey_a->value();
+	double b = ui.Grey_b->value();
+	double c = ui.Grey_c->value();
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+
+			unsigned char newGrey = getNewGreyLog(R, G, B, a, b, c);
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp.copyTo(image);
+	temp.copyTo(originImage);
+	displayMat(image);
+}
+
+unsigned char ImageProcess::getNewGreyLog(unsigned char R, unsigned char G, unsigned char B, double a, double b, double c)
+{
+	unsigned char grey = getGreyValue(R, G, B);
+	double toReturn = a + log((double)((int)grey + 1)) / (b * log(c)); 
+	return toReturn;
+}
+
+void ImageProcess::changeGreyByExp()
+{
+	double a = ui.Grey_a->value();
+	double b = ui.Grey_b->value();
+	double c = ui.Grey_c->value();
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+
+			unsigned char newGrey = getNewGreyExp(R, G, B, a, b, c);
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp.copyTo(image);
+	temp.copyTo(originImage);
+	displayMat(image);
+}
+
+unsigned char ImageProcess::getNewGreyExp(unsigned char R, unsigned char G, unsigned char B, double a, double b, double c)
+{
+	unsigned char grey = getGreyValue(R, G, B);
+	double toReturn = pow(b, c*(grey - a)) - 1;
+	return toReturn;
+}
+
+void ImageProcess::changeGreyByGamma()
+{
+	double gamma = ui.Grey_gamma->value();
+	double c = ui.Grey_c->value();
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+
+			unsigned char newGrey = getNewGreyGamma(R, G, B, c, gamma);
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
+		}
+	}
+	temp.copyTo(image);
+	temp.copyTo(originImage);
+	displayMat(image);
+}
+
+unsigned char ImageProcess::getNewGreyGamma(unsigned char R, unsigned char G, unsigned char B, double c, double gamma)
+{
+	unsigned char grey = getGreyValue(R, G, B);
+	double ratio = grey / (double)255;
+	double s = c*pow(ratio,gamma);
+	return s*255;
+}
+
+void ImageProcess::getHistogram(double temp[], cv::Mat &im)
+{
+	int nr = im.rows;
+	int nl = im.cols*im.channels();
+	int chs = im.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = im.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+
+			unsigned char grey = getGreyValue(R, G, B);
+			temp[grey]++;
+		}
+	}
+	for (int i = 0; i < 256; i++){
+		temp[i] = temp[i] / (nl*nr / 3);
+	}
+	for (int i = 1; i < 256; i++){
+		temp[i] = temp[i] + temp[i - 1];
+	}
 }

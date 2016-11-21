@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
@@ -23,6 +24,7 @@
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -40,6 +42,10 @@ public:
     QAction *actionChoose_Clip_Area;
     QAction *actionClip;
     QAction *actionExit_Choose;
+    QAction *actionHistogram_Equalization;
+    QAction *actionChoose_a_image_SML;
+    QAction *actionNormal_Distribution_SML;
+    QAction *actionChoose_a_image_GML;
     QWidget *centralWidget;
     QLabel *imageLabel;
     QTabWidget *tabWidget;
@@ -64,9 +70,30 @@ public:
     QLabel *label_5;
     QLabel *label_6;
     QDoubleSpinBox *intInput;
+    QWidget *Linear;
+    QLabel *label_7;
+    QDoubleSpinBox *Linear_x;
+    QLabel *label_8;
+    QDoubleSpinBox *Linear_y;
+    QPushButton *Linear_add;
+    QTextBrowser *Linear_points;
+    QPushButton *Linear_apply;
+    QLabel *label_9;
+    QWidget *GreyOther;
+    QComboBox *GreyMethods;
+    QLabel *label_10;
+    QLabel *label_11;
+    QLabel *label_12;
+    QDoubleSpinBox *Grey_a;
+    QDoubleSpinBox *Grey_b;
+    QDoubleSpinBox *Grey_c;
+    QLabel *label_13;
+    QDoubleSpinBox *Grey_gamma;
+    QPushButton *Grey_apply;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuEdit;
+    QMenu *menuHistogram_Specification;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ImageProcessClass)
@@ -102,6 +129,18 @@ public:
         actionExit_Choose = new QAction(ImageProcessClass);
         actionExit_Choose->setObjectName(QStringLiteral("actionExit_Choose"));
         actionExit_Choose->setEnabled(false);
+        actionHistogram_Equalization = new QAction(ImageProcessClass);
+        actionHistogram_Equalization->setObjectName(QStringLiteral("actionHistogram_Equalization"));
+        actionHistogram_Equalization->setEnabled(false);
+        actionChoose_a_image_SML = new QAction(ImageProcessClass);
+        actionChoose_a_image_SML->setObjectName(QStringLiteral("actionChoose_a_image_SML"));
+        actionChoose_a_image_SML->setEnabled(false);
+        actionNormal_Distribution_SML = new QAction(ImageProcessClass);
+        actionNormal_Distribution_SML->setObjectName(QStringLiteral("actionNormal_Distribution_SML"));
+        actionNormal_Distribution_SML->setEnabled(false);
+        actionChoose_a_image_GML = new QAction(ImageProcessClass);
+        actionChoose_a_image_GML->setObjectName(QStringLiteral("actionChoose_a_image_GML"));
+        actionChoose_a_image_GML->setEnabled(false);
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         imageLabel = new QLabel(centralWidget);
@@ -196,6 +235,72 @@ public:
         intInput->setMaximum(100);
         intInput->setSingleStep(1);
         tabWidget->addTab(intensity, QString());
+        Linear = new QWidget();
+        Linear->setObjectName(QStringLiteral("Linear"));
+        label_7 = new QLabel(Linear);
+        label_7->setObjectName(QStringLiteral("label_7"));
+        label_7->setGeometry(QRect(10, 10, 51, 16));
+        Linear_x = new QDoubleSpinBox(Linear);
+        Linear_x->setObjectName(QStringLiteral("Linear_x"));
+        Linear_x->setGeometry(QRect(60, 8, 51, 22));
+        Linear_x->setMaximum(255);
+        label_8 = new QLabel(Linear);
+        label_8->setObjectName(QStringLiteral("label_8"));
+        label_8->setGeometry(QRect(122, 10, 21, 16));
+        Linear_y = new QDoubleSpinBox(Linear);
+        Linear_y->setObjectName(QStringLiteral("Linear_y"));
+        Linear_y->setGeometry(QRect(136, 8, 51, 22));
+        Linear_y->setMaximum(255);
+        Linear_add = new QPushButton(Linear);
+        Linear_add->setObjectName(QStringLiteral("Linear_add"));
+        Linear_add->setGeometry(QRect(210, 8, 51, 23));
+        Linear_points = new QTextBrowser(Linear);
+        Linear_points->setObjectName(QStringLiteral("Linear_points"));
+        Linear_points->setGeometry(QRect(360, 9, 151, 21));
+        Linear_apply = new QPushButton(Linear);
+        Linear_apply->setObjectName(QStringLiteral("Linear_apply"));
+        Linear_apply->setGeometry(QRect(520, 8, 66, 23));
+        label_9 = new QLabel(Linear);
+        label_9->setObjectName(QStringLiteral("label_9"));
+        label_9->setGeometry(QRect(315, 10, 54, 16));
+        tabWidget->addTab(Linear, QString());
+        GreyOther = new QWidget();
+        GreyOther->setObjectName(QStringLiteral("GreyOther"));
+        GreyMethods = new QComboBox(GreyOther);
+        GreyMethods->setObjectName(QStringLiteral("GreyMethods"));
+        GreyMethods->setGeometry(QRect(10, 8, 131, 22));
+        GreyMethods->setMaxCount(2147483646);
+        label_10 = new QLabel(GreyOther);
+        label_10->setObjectName(QStringLiteral("label_10"));
+        label_10->setGeometry(QRect(155, 11, 16, 16));
+        label_11 = new QLabel(GreyOther);
+        label_11->setObjectName(QStringLiteral("label_11"));
+        label_11->setGeometry(QRect(220, 12, 16, 16));
+        label_12 = new QLabel(GreyOther);
+        label_12->setObjectName(QStringLiteral("label_12"));
+        label_12->setGeometry(QRect(280, 11, 16, 16));
+        Grey_a = new QDoubleSpinBox(GreyOther);
+        Grey_a->setObjectName(QStringLiteral("Grey_a"));
+        Grey_a->setGeometry(QRect(168, 9, 41, 21));
+        Grey_a->setDecimals(5);
+        Grey_b = new QDoubleSpinBox(GreyOther);
+        Grey_b->setObjectName(QStringLiteral("Grey_b"));
+        Grey_b->setGeometry(QRect(231, 9, 41, 21));
+        Grey_b->setDecimals(5);
+        Grey_c = new QDoubleSpinBox(GreyOther);
+        Grey_c->setObjectName(QStringLiteral("Grey_c"));
+        Grey_c->setGeometry(QRect(292, 9, 41, 21));
+        Grey_c->setDecimals(5);
+        label_13 = new QLabel(GreyOther);
+        label_13->setObjectName(QStringLiteral("label_13"));
+        label_13->setGeometry(QRect(343, 12, 41, 16));
+        Grey_gamma = new QDoubleSpinBox(GreyOther);
+        Grey_gamma->setObjectName(QStringLiteral("Grey_gamma"));
+        Grey_gamma->setGeometry(QRect(380, 9, 62, 21));
+        Grey_apply = new QPushButton(GreyOther);
+        Grey_apply->setObjectName(QStringLiteral("Grey_apply"));
+        Grey_apply->setGeometry(QRect(470, 10, 75, 23));
+        tabWidget->addTab(GreyOther, QString());
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -205,6 +310,9 @@ public:
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuEdit = new QMenu(menuBar);
         menuEdit->setObjectName(QStringLiteral("menuEdit"));
+        menuHistogram_Specification = new QMenu(menuEdit);
+        menuHistogram_Specification->setObjectName(QStringLiteral("menuHistogram_Specification"));
+        menuHistogram_Specification->setEnabled(true);
         ImageProcessClass->setMenuBar(menuBar);
         statusBar = new QStatusBar(ImageProcessClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
@@ -224,6 +332,11 @@ public:
         menuEdit->addAction(actionChoose_Clip_Area);
         menuEdit->addAction(actionExit_Choose);
         menuEdit->addAction(actionClip);
+        menuEdit->addSeparator();
+        menuEdit->addAction(actionHistogram_Equalization);
+        menuEdit->addAction(menuHistogram_Specification->menuAction());
+        menuHistogram_Specification->addAction(actionChoose_a_image_SML);
+        menuHistogram_Specification->addAction(actionChoose_a_image_GML);
 
         retranslateUi(ImageProcessClass);
         QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
@@ -277,6 +390,10 @@ public:
 #ifndef QT_NO_TOOLTIP
         actionExit_Choose->setToolTip(QApplication::translate("ImageProcessClass", "Exit choosing clip area mode", 0));
 #endif // QT_NO_TOOLTIP
+        actionHistogram_Equalization->setText(QApplication::translate("ImageProcessClass", "Histogram Equalization", 0));
+        actionChoose_a_image_SML->setText(QApplication::translate("ImageProcessClass", "Choose a image SML", 0));
+        actionNormal_Distribution_SML->setText(QApplication::translate("ImageProcessClass", "Normal Distribution SML", 0));
+        actionChoose_a_image_GML->setText(QApplication::translate("ImageProcessClass", "Choose a image GML", 0));
         imageLabel->setText(QString());
         hueLabel->setText(QApplication::translate("ImageProcessClass", "Input:", 0));
         hueButton->setText(QApplication::translate("ImageProcessClass", "Adjust", 0));
@@ -293,8 +410,28 @@ public:
         label_5->setText(QApplication::translate("ImageProcessClass", "-100", 0));
         label_6->setText(QApplication::translate("ImageProcessClass", "100", 0));
         tabWidget->setTabText(tabWidget->indexOf(intensity), QApplication::translate("ImageProcessClass", "Intensity", 0));
+        label_7->setText(QApplication::translate("ImageProcessClass", "Point x:", 0));
+        label_8->setText(QApplication::translate("ImageProcessClass", "y:", 0));
+        Linear_add->setText(QApplication::translate("ImageProcessClass", "Add", 0));
+        Linear_apply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
+        label_9->setText(QApplication::translate("ImageProcessClass", "Points:", 0));
+        tabWidget->setTabText(tabWidget->indexOf(Linear), QApplication::translate("ImageProcessClass", "GreyScale_Linear", 0));
+        GreyMethods->clear();
+        GreyMethods->insertItems(0, QStringList()
+         << QApplication::translate("ImageProcessClass", "Log-transformation", 0)
+         << QApplication::translate("ImageProcessClass", "Exp-transformation", 0)
+         << QApplication::translate("ImageProcessClass", "Gamma Correction", 0)
+        );
+        GreyMethods->setCurrentText(QApplication::translate("ImageProcessClass", "Log-transformation", 0));
+        label_10->setText(QApplication::translate("ImageProcessClass", "a", 0));
+        label_11->setText(QApplication::translate("ImageProcessClass", "b", 0));
+        label_12->setText(QApplication::translate("ImageProcessClass", "c", 0));
+        label_13->setText(QApplication::translate("ImageProcessClass", "Gamma", 0));
+        Grey_apply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
+        tabWidget->setTabText(tabWidget->indexOf(GreyOther), QApplication::translate("ImageProcessClass", "GreyScale_Other", 0));
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
         menuEdit->setTitle(QApplication::translate("ImageProcessClass", "Edit", 0));
+        menuHistogram_Specification->setTitle(QApplication::translate("ImageProcessClass", "Histogram Specification", 0));
     } // retranslateUi
 
 };
