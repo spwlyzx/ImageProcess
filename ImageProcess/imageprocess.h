@@ -1,6 +1,7 @@
 #ifndef IMAGEPROCESS_H
 #define IMAGEPROCESS_H
 
+#define _USE_MATH_DEFINES
 #include <QtWidgets/QMainWindow>
 #include "ui_imageprocess.h"
 #include <QtWidgets/QMessageBox>
@@ -64,6 +65,9 @@ private slots:
 	void histogramEqualizationSlot();
 	void histogramSpecification_Image_Slot_SML();
 	void histogramSpecification_Image_Slot_GML();
+	void applySpatialSlot();
+	void changeSpatialTemplateSizeSlot(int size);
+	void imageSharpeningSlot();
 
 private:
 	void displayMat(cv::Mat img);
@@ -87,6 +91,15 @@ private:
 	void changeGreyByGamma();
 	unsigned char getNewGreyGamma(unsigned char R, unsigned char G, unsigned char B, double c, double gamma);
 	void getHistogram(double temp[], cv::Mat &im);
+	void applyMedianFilter(int templateSize);
+	void applyGaussianBlur(int templateSize);
+	unsigned char getGaussianValue(unsigned char data[], double factor[], int length);
+	void getGaussianFactor(double factor[], int width, int height);
+	double getGaussianValueXY(int x, int y);
+	void sharpenByRoberts();
+	void sharpenByPrewitt();
+	void sharpenBySobel();
+	void sharpenImage(int factor1[], int factor2[], int maxSize);
 };
 
 #endif // IMAGEPROCESS_H

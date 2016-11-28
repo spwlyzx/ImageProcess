@@ -46,6 +46,11 @@ public:
     QAction *actionChoose_a_image_SML;
     QAction *actionNormal_Distribution_SML;
     QAction *actionChoose_a_image_GML;
+    QAction *actionGaussian_Blur;
+    QAction *actionImage_Sharpening;
+    QAction *action3_3;
+    QAction *action5_5_template;
+    QAction *action7_7template;
     QWidget *centralWidget;
     QLabel *imageLabel;
     QTabWidget *tabWidget;
@@ -90,6 +95,14 @@ public:
     QLabel *label_13;
     QDoubleSpinBox *Grey_gamma;
     QPushButton *Grey_apply;
+    QWidget *SpatialFiltering;
+    QComboBox *SpatialType;
+    QSlider *SpatialTemplateSize;
+    QLabel *label_14;
+    QLabel *SpatialSizeLabel;
+    QPushButton *ImageSharpening;
+    QComboBox *ImageSharpeningFactor;
+    QPushButton *SpatialApply;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuEdit;
@@ -100,7 +113,7 @@ public:
     {
         if (ImageProcessClass->objectName().isEmpty())
             ImageProcessClass->setObjectName(QStringLiteral("ImageProcessClass"));
-        ImageProcessClass->resize(600, 400);
+        ImageProcessClass->resize(800, 600);
         actionOpen = new QAction(ImageProcessClass);
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         actionSave = new QAction(ImageProcessClass);
@@ -141,15 +154,27 @@ public:
         actionChoose_a_image_GML = new QAction(ImageProcessClass);
         actionChoose_a_image_GML->setObjectName(QStringLiteral("actionChoose_a_image_GML"));
         actionChoose_a_image_GML->setEnabled(false);
+        actionGaussian_Blur = new QAction(ImageProcessClass);
+        actionGaussian_Blur->setObjectName(QStringLiteral("actionGaussian_Blur"));
+        actionGaussian_Blur->setEnabled(false);
+        actionImage_Sharpening = new QAction(ImageProcessClass);
+        actionImage_Sharpening->setObjectName(QStringLiteral("actionImage_Sharpening"));
+        actionImage_Sharpening->setEnabled(false);
+        action3_3 = new QAction(ImageProcessClass);
+        action3_3->setObjectName(QStringLiteral("action3_3"));
+        action5_5_template = new QAction(ImageProcessClass);
+        action5_5_template->setObjectName(QStringLiteral("action5_5_template"));
+        action7_7template = new QAction(ImageProcessClass);
+        action7_7template->setObjectName(QStringLiteral("action7_7template"));
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         imageLabel = new QLabel(centralWidget);
         imageLabel->setObjectName(QStringLiteral("imageLabel"));
-        imageLabel->setGeometry(QRect(0, 60, 471, 291));
+        imageLabel->setGeometry(QRect(0, 60, 761, 451));
         tabWidget = new QTabWidget(centralWidget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
         tabWidget->setEnabled(false);
-        tabWidget->setGeometry(QRect(0, 0, 600, 61));
+        tabWidget->setGeometry(QRect(0, 0, 800, 61));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -275,36 +300,65 @@ public:
         label_10->setGeometry(QRect(155, 11, 16, 16));
         label_11 = new QLabel(GreyOther);
         label_11->setObjectName(QStringLiteral("label_11"));
-        label_11->setGeometry(QRect(220, 12, 16, 16));
+        label_11->setGeometry(QRect(244, 12, 16, 16));
         label_12 = new QLabel(GreyOther);
         label_12->setObjectName(QStringLiteral("label_12"));
-        label_12->setGeometry(QRect(280, 11, 16, 16));
+        label_12->setGeometry(QRect(336, 11, 16, 16));
         Grey_a = new QDoubleSpinBox(GreyOther);
         Grey_a->setObjectName(QStringLiteral("Grey_a"));
-        Grey_a->setGeometry(QRect(168, 9, 41, 21));
+        Grey_a->setGeometry(QRect(168, 9, 61, 21));
         Grey_a->setDecimals(5);
         Grey_b = new QDoubleSpinBox(GreyOther);
         Grey_b->setObjectName(QStringLiteral("Grey_b"));
-        Grey_b->setGeometry(QRect(231, 9, 41, 21));
+        Grey_b->setGeometry(QRect(259, 9, 61, 21));
         Grey_b->setDecimals(5);
         Grey_c = new QDoubleSpinBox(GreyOther);
         Grey_c->setObjectName(QStringLiteral("Grey_c"));
-        Grey_c->setGeometry(QRect(292, 9, 41, 21));
+        Grey_c->setGeometry(QRect(351, 9, 61, 21));
         Grey_c->setDecimals(5);
         label_13 = new QLabel(GreyOther);
         label_13->setObjectName(QStringLiteral("label_13"));
-        label_13->setGeometry(QRect(343, 12, 41, 16));
+        label_13->setGeometry(QRect(445, 12, 41, 16));
         Grey_gamma = new QDoubleSpinBox(GreyOther);
         Grey_gamma->setObjectName(QStringLiteral("Grey_gamma"));
-        Grey_gamma->setGeometry(QRect(380, 9, 62, 21));
+        Grey_gamma->setGeometry(QRect(487, 9, 62, 21));
         Grey_apply = new QPushButton(GreyOther);
         Grey_apply->setObjectName(QStringLiteral("Grey_apply"));
-        Grey_apply->setGeometry(QRect(470, 10, 75, 23));
+        Grey_apply->setGeometry(QRect(562, 9, 75, 23));
         tabWidget->addTab(GreyOther, QString());
+        SpatialFiltering = new QWidget();
+        SpatialFiltering->setObjectName(QStringLiteral("SpatialFiltering"));
+        SpatialType = new QComboBox(SpatialFiltering);
+        SpatialType->setObjectName(QStringLiteral("SpatialType"));
+        SpatialType->setGeometry(QRect(10, 8, 141, 22));
+        SpatialTemplateSize = new QSlider(SpatialFiltering);
+        SpatialTemplateSize->setObjectName(QStringLiteral("SpatialTemplateSize"));
+        SpatialTemplateSize->setGeometry(QRect(289, 10, 91, 22));
+        SpatialTemplateSize->setMinimum(3);
+        SpatialTemplateSize->setMaximum(27);
+        SpatialTemplateSize->setSingleStep(2);
+        SpatialTemplateSize->setPageStep(3);
+        SpatialTemplateSize->setOrientation(Qt::Horizontal);
+        label_14 = new QLabel(SpatialFiltering);
+        label_14->setObjectName(QStringLiteral("label_14"));
+        label_14->setGeometry(QRect(168, 11, 91, 16));
+        SpatialSizeLabel = new QLabel(SpatialFiltering);
+        SpatialSizeLabel->setObjectName(QStringLiteral("SpatialSizeLabel"));
+        SpatialSizeLabel->setGeometry(QRect(273, 12, 12, 16));
+        ImageSharpening = new QPushButton(SpatialFiltering);
+        ImageSharpening->setObjectName(QStringLiteral("ImageSharpening"));
+        ImageSharpening->setGeometry(QRect(654, 8, 131, 23));
+        ImageSharpeningFactor = new QComboBox(SpatialFiltering);
+        ImageSharpeningFactor->setObjectName(QStringLiteral("ImageSharpeningFactor"));
+        ImageSharpeningFactor->setGeometry(QRect(568, 8, 71, 22));
+        SpatialApply = new QPushButton(SpatialFiltering);
+        SpatialApply->setObjectName(QStringLiteral("SpatialApply"));
+        SpatialApply->setGeometry(QRect(391, 8, 75, 23));
+        tabWidget->addTab(SpatialFiltering, QString());
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 600, 23));
+        menuBar->setGeometry(QRect(0, 0, 800, 23));
         menuBar->setContextMenuPolicy(Qt::NoContextMenu);
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
@@ -341,7 +395,7 @@ public:
         retranslateUi(ImageProcessClass);
         QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(5);
 
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
@@ -394,6 +448,11 @@ public:
         actionChoose_a_image_SML->setText(QApplication::translate("ImageProcessClass", "Choose a image SML", 0));
         actionNormal_Distribution_SML->setText(QApplication::translate("ImageProcessClass", "Normal Distribution SML", 0));
         actionChoose_a_image_GML->setText(QApplication::translate("ImageProcessClass", "Choose a image GML", 0));
+        actionGaussian_Blur->setText(QApplication::translate("ImageProcessClass", "Gaussian Blur", 0));
+        actionImage_Sharpening->setText(QApplication::translate("ImageProcessClass", "Image Sharpening", 0));
+        action3_3->setText(QApplication::translate("ImageProcessClass", "3*3 template", 0));
+        action5_5_template->setText(QApplication::translate("ImageProcessClass", "5*5 template", 0));
+        action7_7template->setText(QApplication::translate("ImageProcessClass", "7*7template", 0));
         imageLabel->setText(QString());
         hueLabel->setText(QApplication::translate("ImageProcessClass", "Input:", 0));
         hueButton->setText(QApplication::translate("ImageProcessClass", "Adjust", 0));
@@ -429,6 +488,22 @@ public:
         label_13->setText(QApplication::translate("ImageProcessClass", "Gamma", 0));
         Grey_apply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
         tabWidget->setTabText(tabWidget->indexOf(GreyOther), QApplication::translate("ImageProcessClass", "GreyScale_Other", 0));
+        SpatialType->clear();
+        SpatialType->insertItems(0, QStringList()
+         << QApplication::translate("ImageProcessClass", "Median Filter", 0)
+         << QApplication::translate("ImageProcessClass", "Gaussian Blur", 0)
+        );
+        label_14->setText(QApplication::translate("ImageProcessClass", "Template Size:", 0));
+        SpatialSizeLabel->setText(QApplication::translate("ImageProcessClass", "3", 0));
+        ImageSharpening->setText(QApplication::translate("ImageProcessClass", "Image Sharpening", 0));
+        ImageSharpeningFactor->clear();
+        ImageSharpeningFactor->insertItems(0, QStringList()
+         << QApplication::translate("ImageProcessClass", "Roberts", 0)
+         << QApplication::translate("ImageProcessClass", "Prewitt", 0)
+         << QApplication::translate("ImageProcessClass", "Sobel", 0)
+        );
+        SpatialApply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
+        tabWidget->setTabText(tabWidget->indexOf(SpatialFiltering), QApplication::translate("ImageProcessClass", "Spatial Filtering ", 0));
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
         menuEdit->setTitle(QApplication::translate("ImageProcessClass", "Edit", 0));
         menuHistogram_Specification->setTitle(QApplication::translate("ImageProcessClass", "Histogram Specification", 0));

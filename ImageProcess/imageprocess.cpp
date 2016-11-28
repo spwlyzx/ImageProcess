@@ -44,6 +44,10 @@ ImageProcess::ImageProcess(QWidget *parent)
 	connect(ui.actionChoose_a_image_SML, SIGNAL(triggered()), this, SLOT(histogramSpecification_Image_Slot_SML()));
 	connect(ui.actionChoose_a_image_GML, SIGNAL(triggered()), this, SLOT(histogramSpecification_Image_Slot_GML()));
 
+	connect(ui.SpatialTemplateSize, SIGNAL(valueChanged(int)), this, SLOT(changeSpatialTemplateSizeSlot(int)));
+	connect(ui.ImageSharpening, SIGNAL(clicked()), this, SLOT(imageSharpeningSlot()));
+	connect(ui.SpatialApply, SIGNAL(clicked()), this, SLOT(applySpatialSlot()));
+
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, ui.imageLabel);
 }
 
@@ -686,6 +690,43 @@ void ImageProcess::histogramSpecification_Image_Slot_GML()
 	displayMat(image);
 }
 
+void ImageProcess::applySpatialSlot()
+{
+	int method = ui.SpatialType->currentIndex();
+	int size = ui.SpatialTemplateSize->value();
+	switch (method)
+	{
+	case 0:applyMedianFilter(size); break;
+	case 1:applyGaussianBlur(size); break;
+	default:
+		break;
+	}
+}
+
+void ImageProcess::changeSpatialTemplateSizeSlot(int size)
+{
+	if (size % 2 == 0){
+		size = size + 1;
+		ui.SpatialTemplateSize->setValue(size);
+		return;
+	}
+	char temp[10];
+	itoa(size, temp, 10);
+	ui.SpatialSizeLabel->setText(temp);
+}
+
+void ImageProcess::imageSharpeningSlot()
+{
+	int method = ui.ImageSharpeningFactor->currentIndex();
+	switch (method)
+	{
+	case 0:sharpenByRoberts(); break;
+	case 1:sharpenByPrewitt(); break;
+	case 2:sharpenBySobel(); break;
+	default:
+		break;
+	}
+}
 
 void ImageProcess::mousePressEvent(QMouseEvent *event)
 {
@@ -1161,4 +1202,283 @@ void ImageProcess::getHistogram(double temp[], cv::Mat &im)
 	for (int i = 1; i < 256; i++){
 		temp[i] = temp[i] + temp[i - 1];
 	}
+}
+
+void ImageProcess::applyMedianFilter(int templateSize)
+{
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int half = templateSize / 2;
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	int count[256] = { 0 };
+	for (int k = 0; k < nr; k++)
+	{
+		uchar* outData = temp.ptr<uchar>(k);
+		if (k - half < 0 || k + half >= nr)
+		{
+			const uchar* inData = originImage.ptr<uchar>(k);
+			for (int i = 0; i < nl; i += chs)
+			{
+				for (int j = 0; j < chs; j++)
+				{
+					outData[i + j] = inData[i + j];
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < nl; i += chs)
+			{
+				if (i - half * 3 < 0 || i + half * 3 >= nl)
+				{
+					const uchar* inData = originImage.ptr<uchar>(k);
+					for (int j = 0; j < chs; j++)
+					{
+						outData[i + j] = inData[i + j];
+					}
+				}
+				else
+				{
+					for (int j = 0; j < chs; j++)
+					{
+						for (int tk = k - half; tk <= k + half; tk++)
+						{
+							const uchar* inData = originImage.ptr<uchar>(tk);
+							for (int ti = i - half * 3; ti <= i + half * 3; ti = ti + 3)
+							{
+								count[(int)inData[ti + j]] = count[(int)inData[ti + j]] + 1;
+							}
+						}
+						int tempCount = (templateSize*templateSize + 1) / 2;
+						unsigned char mid = 0;
+						for (int m = 0; m < 256; m++){
+							if (count[m] == 0){
+								continue;
+							}
+							if (tempCount > 0){
+								tempCount = tempCount - count[m];
+								if (tempCount <= 0){
+									mid = m;
+								}
+							}
+							count[m] = 0;
+						}
+						outData[i + j] = mid;
+					}
+				}
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
+}
+
+void ImageProcess::applyGaussianBlur(int templateSize)
+{
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int half = templateSize / 2;
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	double *factors = new double[templateSize*templateSize];
+	getGaussianFactor(factors, templateSize, templateSize);
+	for (int k = 0; k < nr; k++)
+	{
+		uchar* outData = temp.ptr<uchar>(k);
+		if (k - half < 0 || k + half >= nr)
+		{
+			const uchar* inData = originImage.ptr<uchar>(k);
+			for (int i = 0; i < nl; i += chs)
+			{
+				for (int j = 0; j < chs; j++)
+				{
+					outData[i + j] = inData[i + j];
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < nl; i += chs)
+			{
+				if (i - half * 3 < 0 || i + half * 3 >= nl)
+				{
+					const uchar* inData = originImage.ptr<uchar>(k);
+					for (int j = 0; j < chs; j++)
+					{
+						outData[i + j] = inData[i + j];
+					}
+				}
+				else
+				{
+					for (int j = 0; j < chs; j++)
+					{
+						unsigned char *tempArray = new unsigned char[templateSize*templateSize];
+						int index = 0;
+						for (int tk = k - half; tk <= k + half; tk++)
+						{
+							const uchar* inData = originImage.ptr<uchar>(tk);
+							for (int ti = i - half * 3; ti <= i + half * 3; ti = ti + 3)
+							{
+								tempArray[index] = inData[ti + j];
+								index++;
+							}
+						}
+						outData[i + j] = getGaussianValue(tempArray, factors, templateSize*templateSize);
+					}
+				}
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
+}
+
+unsigned char ImageProcess::getGaussianValue(unsigned char data[], double factor[],int length)
+{
+	double toReturn = 0;
+	for (int i = 0; i < length; i++){
+		toReturn += factor[i] * data[i];
+	}
+	return toReturn;
+}
+
+void ImageProcess::getGaussianFactor(double factor[], int width, int height)
+{
+	double total = 0;
+	for (int i = 0; i < height; i++){
+		for (int j = 0; j < width; j++){
+			factor[i*width + j] = getGaussianValueXY(j-width/2,i-width/2);
+			total += factor[i*width + j];
+		}
+	}
+	for (int i = 0; i < height; i++){
+		for (int j = 0; j < width; j++){
+			factor[i*width + j] = factor[i*width + j] / total;
+		}
+	}
+}
+
+double ImageProcess::getGaussianValueXY(int x, int y)
+{
+	double theta2 = 1.5*1.5;
+	double factor = 1 / (2 * M_PI*theta2);
+	double right = pow(M_E, -(x*x + y*y) / (2 * theta2));
+	return factor*right;
+}
+
+void ImageProcess::sharpenByRoberts()
+{
+	int a[] = { 0, 0, 0,
+				0, 1, 0,
+				0, 0, -1 };
+	int b[] = { 0, 0, 0,
+				0, 0, 1,
+				0, -1, 0 };
+	sharpenImage(a, b, 2);
+}
+
+void ImageProcess::sharpenByPrewitt()
+{
+	int a[] = { -1, -1, -1,
+				0, 0, 0,
+				1, 1, 1 };
+	int b[] = { -1, 0, 1,
+				-1, 0, 1,
+				-1, 0, 1 };
+	sharpenImage(a, b, 4);
+}
+
+void ImageProcess::sharpenBySobel()
+{
+	int a[] = { -1, -2, -1,
+				0, 0, 0,
+				1, 2, 1 };
+	int b[] = { -1, 0, 1,
+				-2, 0, 2,
+				-1, 0, 1 };
+	sharpenImage(a, b, 6);
+}
+
+void ImageProcess::sharpenImage(int factor1[], int factor2[], int maxSize)
+{
+	cv::Mat temp;
+	temp.create(originImage.size(), originImage.type());
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+	for (int k = 0; k < nr; k++)
+	{
+		uchar* outData = temp.ptr<uchar>(k);
+		if (k - 1 < 0 || k + 1 >= nr)
+		{
+			const uchar* inData = originImage.ptr<uchar>(k);
+			for (int i = 0; i < nl; i += chs)
+			{
+				for (int j = 0; j < chs; j++)
+				{
+					outData[i + j] = inData[i + j];
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < nl; i += chs)
+			{
+				if (i - 3 < 0 || i + 3 >= nl)
+				{
+					const uchar* inData = originImage.ptr<uchar>(k);
+					for (int j = 0; j < chs; j++)
+					{
+						outData[i + j] = inData[i + j];
+					}
+				}
+				else
+				{
+					int tempArray[9];
+					int index = 0;
+					unsigned char H, S, V, R, G, B;
+					for (int tk = k - 1; tk <= k + 1; tk++)
+					{
+						const uchar* inData = originImage.ptr<uchar>(tk);
+						for (int ti = i - 3; ti <= i + 3; ti = ti + 3)
+						{
+							R = inData[ti + 2];
+							G = inData[ti + 1];
+							B = inData[ti + 0];
+							RgbToHsv(R, G, B, H, S, V);
+							tempArray[index] = V;
+							index++;
+						}
+					}
+					int tempf1 = 0;
+					for (int m = 0; m < 9; m++){
+						tempf1 += factor1[m] * tempArray[m];
+					}
+					int tempf2 = 0;
+					for (int m = 0; m < 9; m++){
+						tempf2 += factor2[m] * tempArray[m];
+					}
+					const uchar* tempData = originImage.ptr<uchar>(k);
+					double factor = abs(tempf1) + abs(tempf2);
+					R = tempData[i + 2];
+					G = tempData[i + 1];
+					B = tempData[i + 0];
+					RgbToHsv(R, G, B, H, S, V);
+					if (factor / maxSize > 30){
+						factor = (factor / 2) / maxSize + V;
+						V = factor > 255 ? 255 : factor;
+					}
+					HsvToRgb(R, G, B, H, S, V);
+					outData[i + 2] = R;
+					outData[i + 1] = G;
+					outData[i + 0] = B;
+				}
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
 }
