@@ -13,6 +13,8 @@
 #include <math.h>
 #include <iostream>
 
+using namespace cv;
+
 struct Control_Point{
 	unsigned x;
 	unsigned y;
@@ -28,8 +30,9 @@ class ImageProcess : public QMainWindow
 
 private:
 	Ui::ImageProcessClass ui;
-	cv::Mat image;
-	cv::Mat originImage;
+	Mat image;
+	Mat originImage;
+	Mat fourierImage;
 	QString filename;
 	QRubberBand *rubberBand;
 	QPoint origin;
@@ -68,9 +71,10 @@ private slots:
 	void applySpatialSlot();
 	void changeSpatialTemplateSizeSlot(int size);
 	void imageSharpeningSlot();
+	void GaussianFrequencySlot();
 
 private:
-	void displayMat(cv::Mat img);
+	void displayMat(Mat img);
 	void assertNoFile();
 	void limit(QPoint &x);
 	void resizeMain();
@@ -90,7 +94,7 @@ private:
 	unsigned char getNewGreyExp(unsigned char R, unsigned char G, unsigned char B, double a, double b, double c);
 	void changeGreyByGamma();
 	unsigned char getNewGreyGamma(unsigned char R, unsigned char G, unsigned char B, double c, double gamma);
-	void getHistogram(double temp[], cv::Mat &im);
+	void getHistogram(double temp[], Mat &im);
 	void applyMedianFilter(int templateSize);
 	void applyGaussianBlur(int templateSize);
 	unsigned char getGaussianValue(unsigned char data[], double factor[], int length);
@@ -100,6 +104,10 @@ private:
 	void sharpenByPrewitt();
 	void sharpenBySobel();
 	void sharpenImage(int factor1[], int factor2[], int maxSize);
+	Mat Fourier(Mat img);
+	void FourierShift(Mat &img);
+	Mat FourierDistance(Mat img);
+	void GaussianFrequency(int flag,int D0);
 };
 
 #endif // IMAGEPROCESS_H

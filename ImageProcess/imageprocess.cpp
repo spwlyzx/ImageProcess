@@ -3,6 +3,8 @@
 #pragma execution_character_set("utf-8")
 #endif
 
+using namespace cv;
+
 
 ImageProcess::ImageProcess(QWidget *parent)
 	: QMainWindow(parent)
@@ -48,6 +50,8 @@ ImageProcess::ImageProcess(QWidget *parent)
 	connect(ui.ImageSharpening, SIGNAL(clicked()), this, SLOT(imageSharpeningSlot()));
 	connect(ui.SpatialApply, SIGNAL(clicked()), this, SLOT(applySpatialSlot()));
 
+	connect(ui.FrequencyApply, SIGNAL(clicked()), this, SLOT(GaussianFrequencySlot()));
+
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, ui.imageLabel);
 }
 
@@ -60,7 +64,7 @@ void ImageProcess::fileOpenSlot()
 {
 	filename = QFileDialog::getOpenFileName(this, tr("Open Image"),
 		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
-	image = cv::imread(filename.toStdString());
+	image = imread(filename.toStdString());
 	image.copyTo(originImage);
 
 	editExitClipSlot();
@@ -101,7 +105,7 @@ void ImageProcess::fileSaveSlot()
 		assertNoFile();
 		return;
 	}
-	bool result = cv::imwrite(filename.toStdString(), image);
+	bool result = imwrite(filename.toStdString(), image);
 	if (!result)
 	{
 		QMessageBox msgBox;
@@ -119,7 +123,7 @@ void ImageProcess::fileSaveAsSlot()
 	}
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"),
 		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
-	bool result = cv::imwrite(fileName.toStdString(), image);
+	bool result = imwrite(fileName.toStdString(), image);
 	if (!result)
 	{
 		QMessageBox msgBox;
@@ -136,7 +140,7 @@ void ImageProcess::editReverseSlot()
 		return;
 	}
 
-	cv::Mat temp;
+	Mat temp;
 	temp.create(image.size(), image.type());
 	int nr = image.rows;
 	int nl = image.cols*image.channels();
@@ -184,8 +188,8 @@ void ImageProcess::editRotateCWSlot()
 		return;
 	}
 
-	cv::Mat temp;
-	cv::Size tsize(image.size().height, image.size().width);
+	Mat temp;
+	Size tsize(image.size().height, image.size().width);
 	
 	temp.create(tsize, image.type());
 	int nr = image.rows;
@@ -234,8 +238,8 @@ void ImageProcess::editRotateCCWSlot()
 		return;
 	}
 
-	cv::Mat temp;
-	cv::Size tsize(image.size().height, image.size().width);
+	Mat temp;
+	Size tsize(image.size().height, image.size().width);
 
 	temp.create(tsize, image.type());
 	int nr = image.rows;
@@ -291,14 +295,14 @@ void ImageProcess::editChooseAreaSlot()
 
 void ImageProcess::editClipSlot()
 {
-	cv::Mat temp;
+	Mat temp;
 	int top = origin.y() < end.y() ? origin.y() : end.y();
 	int bottom = origin.y() + end.y() - top;
 	int left = origin.x() < end.x() ? origin.x() : end.x();
 	int right = origin.x() + end.x() - left;
 	int width = right - left + 1;
 	int height = bottom - top + 1;
-	cv::Size tsize(width, height);
+	Size tsize(width, height);
 
 	temp.create(tsize, image.type());
 	int nr = image.rows;
@@ -467,7 +471,7 @@ void ImageProcess::applyLinearSlot()
 			}
 		}
 	}
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -513,7 +517,7 @@ void ImageProcess::applyGreyOtherSlot()
 
 void ImageProcess::histogramEqualizationSlot()
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	double p[256] = { 0 };
 	getHistogram(p, originImage);
@@ -548,7 +552,7 @@ void ImageProcess::histogramSpecification_Image_Slot_SML()
 {
 	filename = QFileDialog::getOpenFileName(this, tr("Choose Image"),
 		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
-	cv::Mat temp = cv::imread(filename.toStdString());
+	Mat temp = imread(filename.toStdString());
 
 	if (!image.data)
 	{
@@ -584,7 +588,7 @@ void ImageProcess::histogramSpecification_Image_Slot_SML()
 		Mapping[y] = minX;
 	}
 
-	cv::Mat temp2;
+	Mat temp2;
 	temp2.create(originImage.size(), originImage.type());
 
 	int nr = originImage.rows;
@@ -617,7 +621,7 @@ void ImageProcess::histogramSpecification_Image_Slot_GML()
 {
 	filename = QFileDialog::getOpenFileName(this, tr("Choose Image"),
 		".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
-	cv::Mat temp = cv::imread(filename.toStdString());
+	Mat temp = imread(filename.toStdString());
 
 	if (!image.data)
 	{
@@ -661,7 +665,7 @@ void ImageProcess::histogramSpecification_Image_Slot_GML()
 		}
 	}
 
-	cv::Mat temp2;
+	Mat temp2;
 	temp2.create(originImage.size(), originImage.type());
 
 	int nr = originImage.rows;
@@ -728,6 +732,16 @@ void ImageProcess::imageSharpeningSlot()
 	}
 }
 
+void ImageProcess::GaussianFrequencySlot()
+{
+	int method = ui.FrequencyFilterType->currentIndex();
+	int D0 = ui.FrequencyD0->value();
+	GaussianFrequency(method,D0);
+	if (method == 1){
+
+	}
+}
+
 void ImageProcess::mousePressEvent(QMouseEvent *event)
 {
 	if (isClipping)
@@ -757,9 +771,9 @@ void ImageProcess::mouseReleaseEvent(QMouseEvent *event)
 	rubberBand->setGeometry(QRect(origin, end).normalized());
 }
 
-void ImageProcess::displayMat(cv::Mat origin)
+void ImageProcess::displayMat(Mat origin)
 {
-	cv::Mat rgb;
+	Mat rgb;
 	QImage img;
 	if (image.channels() == 3)
 	{
@@ -822,7 +836,7 @@ void ImageProcess::resizeMain()
 
 void ImageProcess::changeIntensity(int change)
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -855,7 +869,7 @@ void ImageProcess::changeSaturation(int change)
 {
 	double increment = change / (double)100;
 
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -916,7 +930,7 @@ void ImageProcess::changeSaturation(int change)
 
 void ImageProcess::changeHue(int change)
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -1066,7 +1080,7 @@ void ImageProcess::changeGreyByLog()
 	double a = ui.Grey_a->value();
 	double b = ui.Grey_b->value();
 	double c = ui.Grey_c->value();
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -1105,7 +1119,7 @@ void ImageProcess::changeGreyByExp()
 	double a = ui.Grey_a->value();
 	double b = ui.Grey_b->value();
 	double c = ui.Grey_c->value();
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -1143,7 +1157,7 @@ void ImageProcess::changeGreyByGamma()
 {
 	double gamma = ui.Grey_gamma->value();
 	double c = ui.Grey_c->value();
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -1178,7 +1192,7 @@ unsigned char ImageProcess::getNewGreyGamma(unsigned char R, unsigned char G, un
 	return s*255;
 }
 
-void ImageProcess::getHistogram(double temp[], cv::Mat &im)
+void ImageProcess::getHistogram(double temp[], Mat &im)
 {
 	int nr = im.rows;
 	int nl = im.cols*im.channels();
@@ -1206,7 +1220,7 @@ void ImageProcess::getHistogram(double temp[], cv::Mat &im)
 
 void ImageProcess::applyMedianFilter(int templateSize)
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int half = templateSize / 2;
 	int nr = originImage.rows;
@@ -1277,7 +1291,7 @@ void ImageProcess::applyMedianFilter(int templateSize)
 
 void ImageProcess::applyGaussianBlur(int templateSize)
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int half = templateSize / 2;
 	int nr = originImage.rows;
@@ -1365,7 +1379,7 @@ double ImageProcess::getGaussianValueXY(int x, int y)
 {
 	double theta2 = 1.5*1.5;
 	double factor = 1 / (2 * M_PI*theta2);
-	double right = pow(M_E, -(x*x + y*y) / (2 * theta2));
+	double right = exp(-(x*x + y*y) / (2 * theta2));
 	return factor*right;
 }
 
@@ -1404,7 +1418,7 @@ void ImageProcess::sharpenBySobel()
 
 void ImageProcess::sharpenImage(int factor1[], int factor2[], int maxSize)
 {
-	cv::Mat temp;
+	Mat temp;
 	temp.create(originImage.size(), originImage.type());
 	int nr = originImage.rows;
 	int nl = originImage.cols*originImage.channels();
@@ -1481,4 +1495,160 @@ void ImageProcess::sharpenImage(int factor1[], int factor2[], int maxSize)
 	}
 	temp.copyTo(image);
 	displayMat(image);
+}
+
+void ImageProcess::GaussianFrequency(int flag, int D0)
+{
+	Mat record = originImage.clone();
+
+	vector<Mat> channels(3);
+	split(record, channels);
+
+	for (int num = 0; num < 3; num++){
+		Mat value;
+		channels[num].convertTo(value, CV_64FC1, 1 / 255.0);
+
+		Mat fourier, distance;
+		fourier = Fourier(value);
+		FourierShift(fourier);
+
+		int m_c = fourier.rows / 2;
+		int n_c = fourier.cols / 2;
+		for (int i = 0; i < fourier.rows; i++)
+		{
+			for (int j = 0; j < fourier.cols; j++)
+			{
+				double d, h;
+				if (flag == 0)
+				{
+					d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
+					h = exp(-pow(d / D0, 2) / 2);
+				}
+				else if (flag == 1)
+				{
+					d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
+					h = exp(-pow(d / D0, 2) / 2);
+					h = 1 - h;
+				}
+				//ButterWorth
+				//double d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
+				//double h = 1 / pow(1 + (d / d0), (2 * n));
+
+				fourier.at<Vec2d>(i, j)[0] = h*fourier.at<Vec2d>(i, j)[0];
+				fourier.at<Vec2d>(i, j)[1] = h*fourier.at<Vec2d>(i, j)[1];
+			}
+		}
+
+		FourierShift(fourier);
+
+		idft(fourier, fourier);
+
+		Mat planes[2];
+		planes[0] = Mat_<double>(channels[num]);
+		planes[1] = Mat::zeros(channels[num].size(), CV_64F);
+		split(fourier,planes);
+
+		normalize(planes[0],distance,0,1,CV_MINMAX);
+
+		for (int i = 0; i < image.rows; i++)
+		{
+			const double* inData = distance.ptr<double>(i);
+			uchar* outData = image.ptr<uchar>(i);
+			for (int j = 0; j < image.cols; j++)
+			{
+				int temp3 = inData[j] * 255;
+				outData[3*j + num] = (uchar)temp3;
+			}
+		}
+	}
+	displayMat(image);
+}
+
+Mat ImageProcess::Fourier(Mat img)
+{
+	Mat image_Re = img;
+	Mat image_Im = Mat::zeros(img.rows, img.cols, CV_64FC1);
+
+	Mat complexI(img.rows, img.cols, CV_64FC2);
+	
+	std::vector<Mat>planes(2);
+	planes[0] = image_Re;
+	planes[1] = image_Im;
+	merge(planes, complexI);
+
+	dft(complexI, complexI);
+	return complexI;
+}
+
+void ImageProcess::FourierShift(Mat &img)
+{
+	std::vector<Mat>planes(2);
+	split(img, planes);                   // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
+
+	Mat image_Re = planes[0];
+	Mat image_Im = planes[1];
+
+	///////////////////////Re
+	image_Re = image_Re(Rect(0, 0, image_Re.cols & -2, image_Re.rows & -2));
+	int cx = image_Re.cols / 2;
+	int cy = image_Re.rows / 2;
+
+	Mat q0(image_Re, Rect(0, 0, cx, cy));   // Top-Left - 为每一个象限创建ROI
+	Mat q1(image_Re, Rect(cx, 0, cx, cy));  // Top-Right
+	Mat q2(image_Re, Rect(0, cy, cx, cy));  // Bottom-Left
+	Mat q3(image_Re, Rect(cx, cy, cx, cy)); // Bottom-Right
+
+	Mat tmp;                           
+
+	q0.copyTo(tmp);					   // 交换象限 (Top-Left with Bottom-Right)
+	q3.copyTo(q0);
+	tmp.copyTo(q3);
+
+	q1.copyTo(tmp);                    // 交换象限 (Top-Right with Bottom-Left)
+	q2.copyTo(q1);
+	tmp.copyTo(q2);
+
+	/////////////////////Im
+	image_Im = image_Im(Rect(0, 0, image_Im.cols & -2, image_Im.rows & -2));
+	int cx2 = image_Im.cols / 2;
+	int cy2 = image_Im.rows / 2;
+
+	Mat q02(image_Im, Rect(0, 0, cx2, cy2));   // Top-Left - 为每一个象限创建ROI
+	Mat q12(image_Im, Rect(cx2, 0, cx2, cy2));  // Top-Right
+	Mat q22(image_Im, Rect(0, cy2, cx2, cy2));  // Bottom-Left
+	Mat q32(image_Im, Rect(cx2, cy2, cx2, cy2)); // Bottom-Right
+
+	q02.copyTo(tmp);					   // 交换象限 (Top-Left with Bottom-Right)
+	q32.copyTo(q02);
+	tmp.copyTo(q32);
+
+	q12.copyTo(tmp);                    // 交换象限 (Top-Right with Bottom-Left)
+	q22.copyTo(q12);
+	tmp.copyTo(q22);
+
+
+	planes[0] = image_Re;
+	planes[1] = image_Im;
+
+	merge(planes, img);
+}
+
+Mat ImageProcess::FourierDistance(Mat img)
+{
+	Mat image_Re(img.rows, img.cols, CV_64FC1);
+	Mat image_Im = Mat::zeros(img.rows, img.cols, CV_64FC1);
+
+	std::vector<Mat>planes(2);
+	split(img, planes);
+	image_Re = planes[0];
+	image_Im = planes[1];
+
+	pow(image_Re, 2, image_Re);
+	pow(image_Im, 2, image_Im);
+	add(image_Re, image_Im, image_Re);
+	pow(image_Re, 0.5, image_Re);
+
+	normalize(image_Re, image_Re, 1, 0, CV_MINMAX);
+
+	return image_Re;
 }

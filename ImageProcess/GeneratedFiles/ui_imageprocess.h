@@ -103,6 +103,12 @@ public:
     QPushButton *ImageSharpening;
     QComboBox *ImageSharpeningFactor;
     QPushButton *SpatialApply;
+    QWidget *tab;
+    QComboBox *FrequencyFilterType;
+    QSlider *FrequencyD0;
+    QLabel *label_15;
+    QLabel *label_16;
+    QPushButton *FrequencyApply;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuEdit;
@@ -355,6 +361,28 @@ public:
         SpatialApply->setObjectName(QStringLiteral("SpatialApply"));
         SpatialApply->setGeometry(QRect(391, 8, 75, 23));
         tabWidget->addTab(SpatialFiltering, QString());
+        tab = new QWidget();
+        tab->setObjectName(QStringLiteral("tab"));
+        FrequencyFilterType = new QComboBox(tab);
+        FrequencyFilterType->setObjectName(QStringLiteral("FrequencyFilterType"));
+        FrequencyFilterType->setGeometry(QRect(10, 8, 181, 22));
+        FrequencyD0 = new QSlider(tab);
+        FrequencyD0->setObjectName(QStringLiteral("FrequencyD0"));
+        FrequencyD0->setGeometry(QRect(250, 10, 201, 22));
+        FrequencyD0->setMinimum(5);
+        FrequencyD0->setMaximum(1000);
+        FrequencyD0->setValue(7);
+        FrequencyD0->setOrientation(Qt::Horizontal);
+        label_15 = new QLabel(tab);
+        label_15->setObjectName(QStringLiteral("label_15"));
+        label_15->setGeometry(QRect(236, 11, 16, 16));
+        label_16 = new QLabel(tab);
+        label_16->setObjectName(QStringLiteral("label_16"));
+        label_16->setGeometry(QRect(464, 11, 21, 16));
+        FrequencyApply = new QPushButton(tab);
+        FrequencyApply->setObjectName(QStringLiteral("FrequencyApply"));
+        FrequencyApply->setGeometry(QRect(518, 8, 75, 23));
+        tabWidget->addTab(tab, QString());
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -395,7 +423,7 @@ public:
         retranslateUi(ImageProcessClass);
         QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
 
-        tabWidget->setCurrentIndex(5);
+        tabWidget->setCurrentIndex(6);
 
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
@@ -504,6 +532,15 @@ public:
         );
         SpatialApply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
         tabWidget->setTabText(tabWidget->indexOf(SpatialFiltering), QApplication::translate("ImageProcessClass", "Spatial Filtering ", 0));
+        FrequencyFilterType->clear();
+        FrequencyFilterType->insertItems(0, QStringList()
+         << QApplication::translate("ImageProcessClass", "Gaussian Low Pass Filter", 0)
+         << QApplication::translate("ImageProcessClass", "Gaussian High Pass Filter", 0)
+        );
+        label_15->setText(QApplication::translate("ImageProcessClass", "5", 0));
+        label_16->setText(QApplication::translate("ImageProcessClass", "100", 0));
+        FrequencyApply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
+        tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("ImageProcessClass", "Frequency Filtering", 0));
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
         menuEdit->setTitle(QApplication::translate("ImageProcessClass", "Edit", 0));
         menuHistogram_Specification->setTitle(QApplication::translate("ImageProcessClass", "Histogram Specification", 0));
