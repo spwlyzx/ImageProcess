@@ -369,16 +369,16 @@ public:
         FrequencyD0 = new QSlider(tab);
         FrequencyD0->setObjectName(QStringLiteral("FrequencyD0"));
         FrequencyD0->setGeometry(QRect(250, 10, 201, 22));
-        FrequencyD0->setMinimum(5);
-        FrequencyD0->setMaximum(1000);
-        FrequencyD0->setValue(7);
+        FrequencyD0->setMinimum(2);
+        FrequencyD0->setMaximum(100);
+        FrequencyD0->setValue(2);
         FrequencyD0->setOrientation(Qt::Horizontal);
         label_15 = new QLabel(tab);
         label_15->setObjectName(QStringLiteral("label_15"));
         label_15->setGeometry(QRect(236, 11, 16, 16));
         label_16 = new QLabel(tab);
         label_16->setObjectName(QStringLiteral("label_16"));
-        label_16->setGeometry(QRect(464, 11, 21, 16));
+        label_16->setGeometry(QRect(464, 11, 31, 16));
         FrequencyApply = new QPushButton(tab);
         FrequencyApply->setObjectName(QStringLiteral("FrequencyApply"));
         FrequencyApply->setGeometry(QRect(518, 8, 75, 23));
@@ -537,7 +537,7 @@ public:
          << QApplication::translate("ImageProcessClass", "Gaussian Low Pass Filter", 0)
          << QApplication::translate("ImageProcessClass", "Gaussian High Pass Filter", 0)
         );
-        label_15->setText(QApplication::translate("ImageProcessClass", "5", 0));
+        label_15->setText(QApplication::translate("ImageProcessClass", "2", 0));
         label_16->setText(QApplication::translate("ImageProcessClass", "100", 0));
         FrequencyApply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("ImageProcessClass", "Frequency Filtering", 0));

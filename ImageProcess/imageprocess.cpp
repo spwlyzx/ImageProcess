@@ -736,9 +736,16 @@ void ImageProcess::GaussianFrequencySlot()
 {
 	int method = ui.FrequencyFilterType->currentIndex();
 	int D0 = ui.FrequencyD0->value();
-	GaussianFrequency(method,D0);
-	if (method == 1){
-
+	switch (method)
+	{
+	case 0:
+		displayMat(GaussianFrequencyLow(D0, originImage));
+		break;
+	case 1:
+		displayMat(GaussianFrequencyHigh(D0, originImage));
+		break;
+	default:
+		break;
 	}
 }
 
@@ -797,9 +804,9 @@ void ImageProcess::displayMat(Mat origin)
 	ui.imageLabel->setPixmap(QPixmap::fromImage(img));
 
 	if (imageSize.isNull() || imageSize.height() == 0 || imageSize != tsize){
-ui.imageLabel->resize(tsize);
-imageSize = tsize;
-resizeMain();
+		ui.imageLabel->resize(tsize);
+		imageSize = tsize;
+		resizeMain();
 	}
 }
 
@@ -1497,158 +1504,167 @@ void ImageProcess::sharpenImage(int factor1[], int factor2[], int maxSize)
 	displayMat(image);
 }
 
-void ImageProcess::GaussianFrequency(int flag, int D0)
+Mat ImageProcess::GaussianFrequencyLow(int D0,Mat Oimage)
 {
-	Mat record = originImage.clone();
-
 	vector<Mat> channels(3);
-	split(record, channels);
+	Mat toSplit = Oimage.clone();
+	split(toSplit, channels);
 
+	Mat temper;
 	for (int num = 0; num < 3; num++){
-		Mat value;
-		channels[num].convertTo(value, CV_64FC1, 1 / 255.0);
-
-		Mat fourier, distance;
-		fourier = Fourier(value);
-		FourierShift(fourier);
-
-		int m_c = fourier.rows / 2;
-		int n_c = fourier.cols / 2;
-		for (int i = 0; i < fourier.rows; i++)
+		Mat temper = channels[num];
+		temper.convertTo(temper, CV_32FC1);
+		for (int i = 0; i<temper.rows; i++)
 		{
-			for (int j = 0; j < fourier.cols; j++)
+			float *p = temper.ptr<float>(i);
+			for (int j = 0; j<temper.cols; j++)
 			{
-				double d, h;
-				if (flag == 0)
-				{
-					d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
-					h = exp(-pow(d / D0, 2) / 2);
-				}
-				else if (flag == 1)
-				{
-					d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
-					h = exp(-pow(d / D0, 2) / 2);
-					h = 1 - h;
-				}
-				//ButterWorth
-				//double d = sqrt((double)(i - m_c) *(i - m_c) + (j - n_c)*(j - n_c));
-				//double h = 1 / pow(1 + (d / d0), (2 * n));
-
-				fourier.at<Vec2d>(i, j)[0] = h*fourier.at<Vec2d>(i, j)[0];
-				fourier.at<Vec2d>(i, j)[1] = h*fourier.at<Vec2d>(i, j)[1];
+				p[j] = p[j] * pow(-1, i + j);
 			}
 		}
 
-		FourierShift(fourier);
+		int oph = getOptimalDFTSize(temper.rows);
+		int opw = getOptimalDFTSize(temper.cols);
+		Mat padded;
+		copyMakeBorder(temper, padded, 0, oph - temper.rows, 0, opw - temper.cols, BORDER_CONSTANT, Scalar::all(0));
 
-		idft(fourier, fourier);
+		Mat temp[] = { Mat_<float>(padded), Mat::zeros(padded.size(), CV_32FC1) };
+		Mat complexI;
+		merge(temp, 2, complexI);
 
-		Mat planes[2];
-		planes[0] = Mat_<double>(channels[num]);
-		planes[1] = Mat::zeros(channels[num].size(), CV_64F);
-		split(fourier,planes);
+		dft(complexI, complexI);    //傅里叶变换
 
-		normalize(planes[0],distance,0,1,CV_MINMAX);
-
-		for (int i = 0; i < image.rows; i++)
+		Mat gaussianBlur(padded.size(), CV_32FC2);
+		for (int i = 0; i<oph; i++)
 		{
-			const double* inData = distance.ptr<double>(i);
-			uchar* outData = image.ptr<uchar>(i);
-			for (int j = 0; j < image.cols; j++)
+			float *p = gaussianBlur.ptr<float>(i);
+			for (int j = 0; j<opw; j++)
 			{
-				int temp3 = inData[j] * 255;
-				outData[3*j + num] = (uchar)temp3;
+				float d = pow(i - oph / 2, 2) + pow(j - opw / 2, 2);
+				p[2 * j] = expf(-d / (2*D0*D0));
+				p[2 * j + 1] = expf(-d / (2*D0*D0));
 			}
+		}
+
+		multiply(complexI, gaussianBlur, gaussianBlur);
+
+		dft(gaussianBlur, gaussianBlur, CV_DXT_INVERSE);
+
+		Mat dstBlur[2];
+		split(gaussianBlur, dstBlur);
+
+		for (int i = 0; i < oph; i++)
+		{
+			float *p = dstBlur[0].ptr<float>(i);
+			for (int j = 0; j < opw; j++)
+			{
+				p[j] = p[j] * pow(-1, i + j);
+			}
+		}
+		normalize(dstBlur[0], dstBlur[0], 1, 0, CV_MINMAX);
+		channels[num] = dstBlur[0];
+	}
+	merge(channels, image);
+	image.convertTo(image, CV_8UC3, 255);
+	return image;
+}
+
+Mat ImageProcess::GaussianFrequencyHigh(int D0, Mat Oimage)
+{
+	GaussianFrequencyLow(200, Oimage);
+	Mat toSplit = Oimage.clone();
+	vector<Mat> channels(3);
+	split(toSplit, channels);
+
+	Mat temper;
+	for (int num = 0; num < 3; num++){
+		Mat temper = channels[num];
+		temper.convertTo(temper, CV_64FC1);
+		for (int i = 0; i<temper.rows; i++)
+		{
+			double *p = temper.ptr<double>(i);
+			for (int j = 0; j<temper.cols; j++)
+			{
+				p[j] = p[j] * pow(-1, i + j);
+			}
+		}
+
+		int oph = getOptimalDFTSize(temper.rows);
+		int opw = getOptimalDFTSize(temper.cols);
+		Mat padded;
+		copyMakeBorder(temper, padded, 0, oph - temper.rows, 0, opw - temper.cols, BORDER_CONSTANT, Scalar::all(0));
+
+		Mat temp[] = { Mat_<double>(padded), Mat::zeros(padded.size(), CV_64FC1) };
+		Mat complexI;
+		merge(temp, 2, complexI);
+
+		dft(complexI, complexI);    //傅里叶变换
+
+		Mat gaussianSharpen(padded.size(), CV_64FC2);
+		for (int i = 0; i<oph; i++)
+		{
+			double *q = gaussianSharpen.ptr<double>(i);
+			for (int j = 0; j<opw; j++)
+			{
+				double d = pow(i - oph / 2, 2) + pow(j - opw / 2, 2);
+				double temp_q = 2 * (1 - expf(-d / (2 * D0*D0))) + 0.5;
+				temp_q = temp_q > 1 ? 1 : temp_q;
+				q[2 * j] = temp_q;
+				q[2 * j + 1] = temp_q;
+			}
+		}
+
+		multiply(complexI, gaussianSharpen, gaussianSharpen);
+
+		dft(gaussianSharpen, gaussianSharpen, CV_DXT_INVERSE);
+
+		Mat dstSharpen[2];
+		split(gaussianSharpen, dstSharpen);
+
+		for (int i = 0; i < oph; i++)
+		{
+			double *q = dstSharpen[0].ptr<double>(i);
+			for (int j = 0; j < opw; j++)
+			{
+				q[j] = q[j] * pow(-1, i + j);
+			}
+		}
+		normalize(dstSharpen[0], dstSharpen[0], 1, 0, CV_MINMAX);
+		channels[num] = dstSharpen[0];
+	}
+	merge(channels, image);
+	image.convertTo(image, CV_8UC3, 255);
+	return histogramEqualization(image);
+}
+
+Mat ImageProcess::histogramEqualization(Mat Oimage)
+{
+	Mat temp;
+	temp.create(Oimage.size(), Oimage.type());
+	double p[256] = { 0 };
+	getHistogram(p, Oimage);
+
+	int nr = Oimage.rows;
+	int nl = Oimage.cols*Oimage.channels();
+	int chs = Oimage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = Oimage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			unsigned char B = inData[i + 0];
+			unsigned char G = inData[i + 1];
+			unsigned char R = inData[i + 2];
+			unsigned char grey = getGreyValue(R, G, B);
+			unsigned char newGrey = p[grey] * 255;
+			getRGBbyNewGrey(R, G, B, newGrey);
+			outData[i + 0] = B;
+			outData[i + 1] = G;
+			outData[i + 2] = R;
 		}
 	}
-	displayMat(image);
-}
-
-Mat ImageProcess::Fourier(Mat img)
-{
-	Mat image_Re = img;
-	Mat image_Im = Mat::zeros(img.rows, img.cols, CV_64FC1);
-
-	Mat complexI(img.rows, img.cols, CV_64FC2);
-	
-	std::vector<Mat>planes(2);
-	planes[0] = image_Re;
-	planes[1] = image_Im;
-	merge(planes, complexI);
-
-	dft(complexI, complexI);
-	return complexI;
-}
-
-void ImageProcess::FourierShift(Mat &img)
-{
-	std::vector<Mat>planes(2);
-	split(img, planes);                   // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
-
-	Mat image_Re = planes[0];
-	Mat image_Im = planes[1];
-
-	///////////////////////Re
-	image_Re = image_Re(Rect(0, 0, image_Re.cols & -2, image_Re.rows & -2));
-	int cx = image_Re.cols / 2;
-	int cy = image_Re.rows / 2;
-
-	Mat q0(image_Re, Rect(0, 0, cx, cy));   // Top-Left - 为每一个象限创建ROI
-	Mat q1(image_Re, Rect(cx, 0, cx, cy));  // Top-Right
-	Mat q2(image_Re, Rect(0, cy, cx, cy));  // Bottom-Left
-	Mat q3(image_Re, Rect(cx, cy, cx, cy)); // Bottom-Right
-
-	Mat tmp;                           
-
-	q0.copyTo(tmp);					   // 交换象限 (Top-Left with Bottom-Right)
-	q3.copyTo(q0);
-	tmp.copyTo(q3);
-
-	q1.copyTo(tmp);                    // 交换象限 (Top-Right with Bottom-Left)
-	q2.copyTo(q1);
-	tmp.copyTo(q2);
-
-	/////////////////////Im
-	image_Im = image_Im(Rect(0, 0, image_Im.cols & -2, image_Im.rows & -2));
-	int cx2 = image_Im.cols / 2;
-	int cy2 = image_Im.rows / 2;
-
-	Mat q02(image_Im, Rect(0, 0, cx2, cy2));   // Top-Left - 为每一个象限创建ROI
-	Mat q12(image_Im, Rect(cx2, 0, cx2, cy2));  // Top-Right
-	Mat q22(image_Im, Rect(0, cy2, cx2, cy2));  // Bottom-Left
-	Mat q32(image_Im, Rect(cx2, cy2, cx2, cy2)); // Bottom-Right
-
-	q02.copyTo(tmp);					   // 交换象限 (Top-Left with Bottom-Right)
-	q32.copyTo(q02);
-	tmp.copyTo(q32);
-
-	q12.copyTo(tmp);                    // 交换象限 (Top-Right with Bottom-Left)
-	q22.copyTo(q12);
-	tmp.copyTo(q22);
-
-
-	planes[0] = image_Re;
-	planes[1] = image_Im;
-
-	merge(planes, img);
-}
-
-Mat ImageProcess::FourierDistance(Mat img)
-{
-	Mat image_Re(img.rows, img.cols, CV_64FC1);
-	Mat image_Im = Mat::zeros(img.rows, img.cols, CV_64FC1);
-
-	std::vector<Mat>planes(2);
-	split(img, planes);
-	image_Re = planes[0];
-	image_Im = planes[1];
-
-	pow(image_Re, 2, image_Re);
-	pow(image_Im, 2, image_Im);
-	add(image_Re, image_Im, image_Re);
-	pow(image_Re, 0.5, image_Re);
-
-	normalize(image_Re, image_Re, 1, 0, CV_MINMAX);
-
-	return image_Re;
+	temp.copyTo(image);
+	return image;
 }

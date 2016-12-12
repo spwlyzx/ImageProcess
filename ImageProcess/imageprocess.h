@@ -104,10 +104,9 @@ private:
 	void sharpenByPrewitt();
 	void sharpenBySobel();
 	void sharpenImage(int factor1[], int factor2[], int maxSize);
-	Mat Fourier(Mat img);
-	void FourierShift(Mat &img);
-	Mat FourierDistance(Mat img);
-	void GaussianFrequency(int flag,int D0);
+	Mat GaussianFrequencyLow(int D0, Mat Oimage);
+	Mat GaussianFrequencyHigh(int D0, Mat Oimage);
+	Mat histogramEqualization(Mat Oimage);
 };
 
 #endif // IMAGEPROCESS_H
