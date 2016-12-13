@@ -22,6 +22,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QTextBrowser>
@@ -51,6 +52,8 @@ public:
     QAction *action3_3;
     QAction *action5_5_template;
     QAction *action7_7template;
+    QAction *actionDermabrasion;
+    QAction *actionRilievo_Style;
     QWidget *centralWidget;
     QLabel *imageLabel;
     QTabWidget *tabWidget;
@@ -109,17 +112,25 @@ public:
     QLabel *label_15;
     QLabel *label_16;
     QPushButton *FrequencyApply;
+    QWidget *tab_2;
+    QComboBox *DermabrasionMethod;
+    QLabel *label_17;
+    QSpinBox *DermabrasionR;
+    QLabel *label_18;
+    QSpinBox *DermabrasionY;
+    QPushButton *DermabrasionButton;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuEdit;
     QMenu *menuHistogram_Specification;
+    QMenu *menuStyle;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ImageProcessClass)
     {
         if (ImageProcessClass->objectName().isEmpty())
             ImageProcessClass->setObjectName(QStringLiteral("ImageProcessClass"));
-        ImageProcessClass->resize(800, 600);
+        ImageProcessClass->resize(850, 602);
         actionOpen = new QAction(ImageProcessClass);
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         actionSave = new QAction(ImageProcessClass);
@@ -172,6 +183,11 @@ public:
         action5_5_template->setObjectName(QStringLiteral("action5_5_template"));
         action7_7template = new QAction(ImageProcessClass);
         action7_7template->setObjectName(QStringLiteral("action7_7template"));
+        actionDermabrasion = new QAction(ImageProcessClass);
+        actionDermabrasion->setObjectName(QStringLiteral("actionDermabrasion"));
+        actionRilievo_Style = new QAction(ImageProcessClass);
+        actionRilievo_Style->setObjectName(QStringLiteral("actionRilievo_Style"));
+        actionRilievo_Style->setEnabled(false);
         centralWidget = new QWidget(ImageProcessClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         imageLabel = new QLabel(centralWidget);
@@ -180,7 +196,7 @@ public:
         tabWidget = new QTabWidget(centralWidget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
         tabWidget->setEnabled(false);
-        tabWidget->setGeometry(QRect(0, 0, 800, 61));
+        tabWidget->setGeometry(QRect(0, 0, 851, 61));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -383,10 +399,33 @@ public:
         FrequencyApply->setObjectName(QStringLiteral("FrequencyApply"));
         FrequencyApply->setGeometry(QRect(518, 8, 75, 23));
         tabWidget->addTab(tab, QString());
+        tab_2 = new QWidget();
+        tab_2->setObjectName(QStringLiteral("tab_2"));
+        DermabrasionMethod = new QComboBox(tab_2);
+        DermabrasionMethod->setObjectName(QStringLiteral("DermabrasionMethod"));
+        DermabrasionMethod->setGeometry(QRect(10, 8, 151, 22));
+        label_17 = new QLabel(tab_2);
+        label_17->setObjectName(QStringLiteral("label_17"));
+        label_17->setGeometry(QRect(234, 10, 16, 16));
+        DermabrasionR = new QSpinBox(tab_2);
+        DermabrasionR->setObjectName(QStringLiteral("DermabrasionR"));
+        DermabrasionR->setGeometry(QRect(249, 9, 42, 22));
+        DermabrasionR->setValue(10);
+        label_18 = new QLabel(tab_2);
+        label_18->setObjectName(QStringLiteral("label_18"));
+        label_18->setGeometry(QRect(323, 12, 16, 16));
+        DermabrasionY = new QSpinBox(tab_2);
+        DermabrasionY->setObjectName(QStringLiteral("DermabrasionY"));
+        DermabrasionY->setGeometry(QRect(340, 9, 42, 22));
+        DermabrasionY->setValue(28);
+        DermabrasionButton = new QPushButton(tab_2);
+        DermabrasionButton->setObjectName(QStringLiteral("DermabrasionButton"));
+        DermabrasionButton->setGeometry(QRect(440, 8, 75, 23));
+        tabWidget->addTab(tab_2, QString());
         ImageProcessClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ImageProcessClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 800, 23));
+        menuBar->setGeometry(QRect(0, 0, 850, 23));
         menuBar->setContextMenuPolicy(Qt::NoContextMenu);
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
@@ -395,6 +434,8 @@ public:
         menuHistogram_Specification = new QMenu(menuEdit);
         menuHistogram_Specification->setObjectName(QStringLiteral("menuHistogram_Specification"));
         menuHistogram_Specification->setEnabled(true);
+        menuStyle = new QMenu(menuBar);
+        menuStyle->setObjectName(QStringLiteral("menuStyle"));
         ImageProcessClass->setMenuBar(menuBar);
         statusBar = new QStatusBar(ImageProcessClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
@@ -402,6 +443,7 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuEdit->menuAction());
+        menuBar->addAction(menuStyle->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionSave);
         menuFile->addAction(actionSave_as);
@@ -419,11 +461,12 @@ public:
         menuEdit->addAction(menuHistogram_Specification->menuAction());
         menuHistogram_Specification->addAction(actionChoose_a_image_SML);
         menuHistogram_Specification->addAction(actionChoose_a_image_GML);
+        menuStyle->addAction(actionRilievo_Style);
 
         retranslateUi(ImageProcessClass);
         QObject::connect(actionExit, SIGNAL(triggered()), ImageProcessClass, SLOT(close()));
 
-        tabWidget->setCurrentIndex(6);
+        tabWidget->setCurrentIndex(7);
 
 
         QMetaObject::connectSlotsByName(ImageProcessClass);
@@ -481,6 +524,8 @@ public:
         action3_3->setText(QApplication::translate("ImageProcessClass", "3*3 template", 0));
         action5_5_template->setText(QApplication::translate("ImageProcessClass", "5*5 template", 0));
         action7_7template->setText(QApplication::translate("ImageProcessClass", "7*7template", 0));
+        actionDermabrasion->setText(QApplication::translate("ImageProcessClass", "Dermabrasion Filter", 0));
+        actionRilievo_Style->setText(QApplication::translate("ImageProcessClass", "Rilievo Style", 0));
         imageLabel->setText(QString());
         hueLabel->setText(QApplication::translate("ImageProcessClass", "Input:", 0));
         hueButton->setText(QApplication::translate("ImageProcessClass", "Adjust", 0));
@@ -541,9 +586,19 @@ public:
         label_16->setText(QApplication::translate("ImageProcessClass", "100", 0));
         FrequencyApply->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("ImageProcessClass", "Frequency Filtering", 0));
+        DermabrasionMethod->clear();
+        DermabrasionMethod->insertItems(0, QStringList()
+         << QApplication::translate("ImageProcessClass", "Bilateral filter", 0)
+         << QApplication::translate("ImageProcessClass", "Surface Filter", 0)
+        );
+        label_17->setText(QApplication::translate("ImageProcessClass", "r", 0));
+        label_18->setText(QApplication::translate("ImageProcessClass", "Y", 0));
+        DermabrasionButton->setText(QApplication::translate("ImageProcessClass", "Apply", 0));
+        tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("ImageProcessClass", "Dermabrasion Filter", 0));
         menuFile->setTitle(QApplication::translate("ImageProcessClass", "File", 0));
         menuEdit->setTitle(QApplication::translate("ImageProcessClass", "Edit", 0));
         menuHistogram_Specification->setTitle(QApplication::translate("ImageProcessClass", "Histogram Specification", 0));
+        menuStyle->setTitle(QApplication::translate("ImageProcessClass", "Style", 0));
     } // retranslateUi
 
 };

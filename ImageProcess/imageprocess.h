@@ -72,6 +72,8 @@ private slots:
 	void changeSpatialTemplateSizeSlot(int size);
 	void imageSharpeningSlot();
 	void GaussianFrequencySlot();
+	void DermabrasionSlot();
+	void RilievoSlot();
 
 private:
 	void displayMat(Mat img);
@@ -81,6 +83,8 @@ private:
 	void changeIntensity(int change);
 	void changeSaturation(int change);
 	void changeHue(int change);
+	int max(int a, int b);
+	int min(int a, int b);
 	int max(int a, int b, int c);
 	int min(int a, int b, int c);
 	void HsvToRgb(unsigned char &r, unsigned char &g, unsigned char &b, unsigned char h, unsigned char s, unsigned char v);
@@ -107,6 +111,9 @@ private:
 	Mat GaussianFrequencyLow(int D0, Mat Oimage);
 	Mat GaussianFrequencyHigh(int D0, Mat Oimage);
 	Mat histogramEqualization(Mat Oimage);
+	void SurfaceFilter(int r, int Y);
+	void BilateralFilter(int r);
+	bool isSkin(unsigned char R, unsigned char G, unsigned char B);
 };
 
 #endif // IMAGEPROCESS_H

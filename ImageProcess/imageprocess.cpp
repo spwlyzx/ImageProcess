@@ -52,6 +52,9 @@ ImageProcess::ImageProcess(QWidget *parent)
 
 	connect(ui.FrequencyApply, SIGNAL(clicked()), this, SLOT(GaussianFrequencySlot()));
 
+	connect(ui.DermabrasionButton, SIGNAL(clicked()), this, SLOT(DermabrasionSlot()));
+	connect(ui.actionRilievo_Style, SIGNAL(triggered()), this, SLOT(RilievoSlot()));
+
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, ui.imageLabel);
 }
 
@@ -88,6 +91,7 @@ void ImageProcess::fileOpenSlot()
 		ui.actionChoose_a_image_SML->setEnabled(true);
 		ui.actionChoose_a_image_GML->setEnabled(true);
 		ui.tabWidget->setEnabled(true);
+		ui.actionRilievo_Style->setEnabled(true);
 		Control_Point temp1, temp2;
 		temp1.x = 0;
 		temp1.y = 0;
@@ -749,6 +753,55 @@ void ImageProcess::GaussianFrequencySlot()
 	}
 }
 
+void ImageProcess::DermabrasionSlot()
+{
+	int method = ui.DermabrasionMethod->currentIndex();
+	int r = ui.DermabrasionR->value();
+	int Y = ui.DermabrasionY->value();
+	switch (method){
+	case 1:
+		SurfaceFilter(r, Y); break;
+	case 0:
+		BilateralFilter(r); break;
+	default:
+		break;
+	}
+}
+
+void ImageProcess::RilievoSlot()
+{
+	Mat temp;
+	temp.create(image.size(), image.type());
+	int nr = image.rows;
+	int nl = image.cols*image.channels();
+	int chs = image.channels();
+	for (int k = 1; k < nr-1; k++)
+	{
+		const uchar* pre = image.ptr<uchar>(k - 1);
+		const uchar* post = image.ptr<uchar>(k + 1);
+		uchar* outData = temp.ptr<uchar>(k);
+		int temp;
+		for (int i = chs; i < nl-chs; i += chs)
+		{
+			for (int j = 0; j < chs; j++)
+			{
+				temp = pre[i - chs + j] - post[i + chs + j] + 100;
+				if (temp < 0){
+					outData[i + j] = 0;
+				}
+				else if (temp>255){
+					outData[i + j] = 255;
+				}
+				else{
+					outData[i + j] = temp; 
+				}
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
+}
+
 void ImageProcess::mousePressEvent(QMouseEvent *event)
 {
 	if (isClipping)
@@ -976,6 +1029,16 @@ int ImageProcess::min(int a, int b, int c)
 {
 	int temp = a < b ? a : b;
 	return temp < c ? temp : c;
+}
+
+int ImageProcess::min(int a, int b)
+{
+	return a > b ? b : a;
+}
+
+int ImageProcess::max(int a, int b)
+{
+	return a > b ? a : b;
 }
 
 void ImageProcess::HsvToRgb(unsigned char &r, unsigned char &g, unsigned char &b, unsigned char h, unsigned char s, unsigned char v)
@@ -1667,4 +1730,125 @@ Mat ImageProcess::histogramEqualization(Mat Oimage)
 	}
 	temp.copyTo(image);
 	return image;
+}
+
+void ImageProcess::SurfaceFilter(int r, int Y)
+{
+	Mat temp;
+	temp.create(originImage.size(), originImage.type());
+
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			int R, G, B;
+			R = inData[i + 2];
+			G = inData[i + 1];
+			B = inData[i + 0];
+			if (isSkin(R,G,B)){
+				for (int j = 0; j < chs; j++){
+					uchar x = inData[i + j];
+					double top = 0, bottom = 0;
+					uchar Max = 0, Min = 255;
+					for (int p = max(k - r, 0); p <= min(k + r, nr - 1); p++){
+						const uchar* inData_temp = originImage.ptr<uchar>(p);
+						for (int q = max(i - r*chs, 0); q <= min(i + r*chs, nl - 1); q += chs){
+							uchar xi = inData_temp[q + j];
+							if (xi > Max){
+								Max = xi;
+							}
+							if (xi < Min){
+								Min = xi;
+							}
+							double weight = (1 - (abs(xi - x) / 2.5) / Y);
+							top += weight*xi;
+							bottom += weight;
+						}
+					}
+					double result = bottom == 0 ? 0 : abs(top / bottom);
+					uchar temp_result = result>Max || result < Min ? x : (int)result;
+					outData[i + j] = abs(temp_result - x)>40 ? x : temp_result;
+				}
+			}
+			else
+			{
+				outData[i + 0] = B;
+				outData[i + 1] = G;
+				outData[i + 2] = R;
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
+}
+
+void ImageProcess::BilateralFilter(int r)
+{
+	Mat temp;
+	temp.create(originImage.size(), originImage.type());
+
+	int nr = originImage.rows;
+	int nl = originImage.cols*originImage.channels();
+	int chs = originImage.channels();
+
+	for (int k = 0; k < nr; k++)
+	{
+		const uchar* inData = originImage.ptr<uchar>(k);
+		uchar* outData = temp.ptr<uchar>(k);
+		for (int i = 0; i < nl; i += chs)
+		{
+			int R, G, B;
+			R = inData[i + 2];
+			G = inData[i + 1];
+			B = inData[i + 0];
+			if (isSkin(R,G,B)){
+				for (int j = 0; j < chs; j++){
+					uchar x = inData[i + j];
+					double top = 0, bottom = 0;
+					uchar Max = 0, Min = 255;
+					double weight, dw, rw;
+					for (int p = max(k - r, 0, 0); p <= min(k + r, nr - 1, nr - 1); p++){
+						uchar* inData_temp = originImage.ptr<uchar>(p);
+						for (int q = max(i - r*chs, 0, 0); q <= min(i + r*chs, nl - 3+j, nl - 3+j); q += chs){
+							uchar xi = inData_temp[q + j];
+							if (xi > Max){
+								Max = xi;
+							}
+							if (xi < Min){
+								Min = xi;
+							}
+							dw = exp(-0.5*((k-p)*(k-p)+(i-q)*(i-q))/(8.0*8.0));
+							rw = exp(-0.5*pow((x - xi) / 40.0, 2));
+							weight = dw*rw;
+							top += weight*xi;
+							bottom += weight;
+						}
+					}
+					double result = bottom == 0 ? 0 : abs(top / bottom);
+					uchar temp_result = (int)result;
+					outData[i + j] = temp_result;
+				}
+			}
+			else
+			{
+				outData[i + 0] = B;
+				outData[i + 1] = G;
+				outData[i + 2] = R;
+			}
+		}
+	}
+	temp.copyTo(image);
+	displayMat(image);
+}
+
+bool ImageProcess::isSkin(unsigned char R, unsigned char G, unsigned char B)
+{
+	return (R > 95 && G > 40 && B > 20 && R - B > 15 && R - G > 15 && R > G&&R > B) ||
+		(R > 200 && G > 210 && B > 170 && abs(R - B) <= 15 && R > B&&G > B);
 }

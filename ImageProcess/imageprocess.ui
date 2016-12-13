@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>850</width>
+    <height>602</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>800</width>
+      <width>851</width>
       <height>61</height>
      </rect>
     </property>
@@ -52,7 +52,7 @@
      <bool>false</bool>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>7</number>
     </property>
     <widget class="QWidget" name="hue">
      <attribute name="title">
@@ -799,6 +799,96 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Dermabrasion Filter</string>
+     </attribute>
+     <widget class="QComboBox" name="DermabrasionMethod">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>8</y>
+        <width>151</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Bilateral filter</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Surface Filter</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="label_17">
+      <property name="geometry">
+       <rect>
+        <x>234</x>
+        <y>10</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>r</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="DermabrasionR">
+      <property name="geometry">
+       <rect>
+        <x>249</x>
+        <y>9</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_18">
+      <property name="geometry">
+       <rect>
+        <x>323</x>
+        <y>12</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Y</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="DermabrasionY">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>9</y>
+        <width>42</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>28</number>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="DermabrasionButton">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>8</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -806,7 +896,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>850</width>
      <height>23</height>
     </rect>
    </property>
@@ -848,8 +938,15 @@
     <addaction name="actionHistogram_Equalization"/>
     <addaction name="menuHistogram_Specification"/>
    </widget>
+   <widget class="QMenu" name="menuStyle">
+    <property name="title">
+     <string>Style</string>
+    </property>
+    <addaction name="actionRilievo_Style"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuStyle"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -1017,6 +1114,19 @@
   <action name="action7_7template">
    <property name="text">
     <string>7*7template</string>
+   </property>
+  </action>
+  <action name="actionDermabrasion">
+   <property name="text">
+    <string>Dermabrasion Filter</string>
+   </property>
+  </action>
+  <action name="actionRilievo_Style">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Rilievo Style</string>
    </property>
   </action>
  </widget>
